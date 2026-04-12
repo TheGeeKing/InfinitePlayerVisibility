@@ -24,6 +24,10 @@ abstract class ClientWorldMixin {
 
 	@Inject(method = "addEntity", at = @At("TAIL"))
 	private void infinitePlayerVisibility$startForcedEntityTicking(Entity entity, CallbackInfo ci) {
+		if (ClientEntityVisibility.shouldOverrideDistanceLimit(entity)) {
+			ClientEntityVisibility.invalidateRenderableEntityPositionCache();
+		}
+
 		if (ClientEntityVisibility.shouldForceClientTick(entity) && !this.entityList.has(entity)) {
 			this.entityList.add(entity);
 		}
@@ -32,7 +36,15 @@ abstract class ClientWorldMixin {
 	@Inject(method = "removeEntity", at = @At("HEAD"))
 	private void infinitePlayerVisibility$stopForcedEntityTicking(int entityId, Entity.RemovalReason removalReason, CallbackInfo ci) {
 		Entity entity = this.getEntityById(entityId);
-		if (entity != null && ClientEntityVisibility.shouldForceClientTick(entity) && this.entityList.has(entity)) {
+		if (entity == null) {
+			return;
+		}
+
+		if (ClientEntityVisibility.shouldOverrideDistanceLimit(entity)) {
+			ClientEntityVisibility.invalidateRenderableEntityPositionCache();
+		}
+
+		if (ClientEntityVisibility.shouldForceClientTick(entity) && this.entityList.has(entity)) {
 			this.entityList.remove(entity);
 		}
 	}

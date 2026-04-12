@@ -6,6 +6,7 @@
 		"ClientWorldClientEntityHandlerMixin",
 		"ClientWorldMixin",
 		"EntityRenderManagerMixin",
+		"EntityRendererAccessor",
 		"EntityMixin",
 		"ItemEntityMixin",
 		"WorldRendererMixin"
