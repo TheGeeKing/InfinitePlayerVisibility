@@ -1,21 +1,16 @@
 # Infinite Player Visibility
 
-Mod Fabric pour `Minecraft 1.21.11` qui garde les joueurs visibles a tres longue distance sans charger leurs chunks.
+Fabric mod for Minecraft 1.21.11 that keeps players visible at very long distances without loading their chunks.
 
-## Comportement
+Behavior
+The server continues to synchronize player entities even outside the normal tracking range.
+The client accepts rendering these players even if their chunk is not loaded.
+Distant chunks are still not loaded.
+Installation
 
-- Le serveur continue a synchroniser les entites joueurs meme hors distance de suivi normale.
-- Le client accepte de rendre ces joueurs meme si leur chunk n'est pas charge.
-- Les chunks lointains ne sont pas charges pour autant.
+Install the same JAR on both the server and the clients. The server side handles network tracking, and the client side removes rendering limits.
 
-## Installation
-
-Installe le meme jar sur le serveur et sur les clients. Le cote serveur gere le tracking reseau, et le cote client leve les limites de rendu.
-
-## Build
-
-```powershell
+Build
 .\gradlew.bat build
-```
 
-Le jar remappe se trouvera dans `build/libs/`.
+The remapped JAR will be located in build/libs/.
