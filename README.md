@@ -3,7 +3,7 @@
 Fabric mod for Minecraft 1.21.11 that keeps players visible at very long distances without loading their chunks.
 - As of 1.2.0 Entities can be rendered too (ticking entities)
 
-*BEHAVIOR :
+*HOW IT WORK :
 
 The server continues to synchronize player entities even outside the normal tracking range.
 The client accepts rendering these players even if their chunk is not loaded.
