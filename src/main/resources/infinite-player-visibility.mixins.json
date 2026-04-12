@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "com.infiniteplayervisibility.mixin.server",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ServerChunkLoadingManagerEntityTrackerAccessor",
+		"ServerChunkLoadingManagerMixin",
+		"ServerChunkLoadingManagerEntityTrackerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

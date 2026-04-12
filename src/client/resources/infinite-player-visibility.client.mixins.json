@@ -1,0 +1,19 @@
+{
+	"required": true,
+	"package": "com.infiniteplayervisibility.client.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"ClientWorldClientEntityHandlerMixin",
+		"ClientWorldMixin",
+		"EntityRenderManagerMixin",
+		"EntityMixin",
+		"ItemEntityMixin",
+		"WorldRendererMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

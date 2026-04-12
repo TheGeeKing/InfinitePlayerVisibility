@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "infinite_player_visibility",
+	"version": "${version}",
+	"name": "Infinite Player Visibility",
+	"description": "Permet aux joueurs de rester visibles meme a tres grande distance, sans charger leurs chunks.",
+	"authors": [
+		"Codex"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/infinite_player_visibility/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.infiniteplayervisibility.InfinitePlayerVisibilityMod"
+		],
+		"modmenu": [
+			"com.infiniteplayervisibility.client.modmenu.InfinitePlayerVisibilityModMenuApi"
+		]
+	},
+	"mixins": [
+		"infinite-player-visibility.mixins.json",
+		{
+			"config": "infinite-player-visibility.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.1",
+		"minecraft": "~1.21.11",
+		"java": ">=21"
+	},
+	"suggests": {
+		"modmenu": "*"
+	}
+}
