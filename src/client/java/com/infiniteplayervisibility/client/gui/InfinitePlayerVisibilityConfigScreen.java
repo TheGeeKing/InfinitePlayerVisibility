@@ -1,5 +1,6 @@
 package com.infiniteplayervisibility.client.gui;
 
+import com.infiniteplayervisibility.client.ClientEntityVisibility;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
 import java.util.Locale;
@@ -32,6 +33,14 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 		int leftX = centerX - OPTIONS_WIDTH / 2;
 		int y = 68;
 
+		this.addRenderableWidget(
+			CycleButton.onOffBuilder(this.workingCopy.enabled())
+				.create(leftX, y, OPTIONS_WIDTH, 20, Component.translatable("option.infinite_player_visibility.enabled"), (button, value) -> {
+					this.workingCopy.setEnabled(value);
+				})
+		);
+
+		y += 24;
 		this.addRenderableWidget(
 			CycleButton.onOffBuilder(this.workingCopy.renderRemotePlayers())
 				.create(leftX, y, OPTIONS_WIDTH, 20, Component.translatable("option.infinite_player_visibility.remote_players"), (button, value) -> {
@@ -72,6 +81,7 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 
 	private void saveAndClose() {
 		InfinitePlayerVisibilityConfigManager.setConfig(this.workingCopy);
+		ClientEntityVisibility.invalidateRenderableEntityPositionCache();
 		this.onClose();
 	}
 

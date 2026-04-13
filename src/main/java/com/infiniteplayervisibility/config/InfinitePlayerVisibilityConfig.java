@@ -6,9 +6,18 @@ public final class InfinitePlayerVisibilityConfig {
 	public static final int MIN_VISIBILITY_DISTANCE_BLOCKS = 64;
 	public static final int MAX_VISIBILITY_DISTANCE_BLOCKS = EntityVisibilityRules.INFINITE_TRACKING_DISTANCE_BLOCKS;
 
+	private boolean enabled = true;
 	private boolean renderRemotePlayers = true;
 	private boolean renderRemoteEntities = true;
 	private int visibilityDistanceBlocks = MAX_VISIBILITY_DISTANCE_BLOCKS;
+
+	public boolean enabled() {
+		return this.enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
 
 	public boolean renderRemotePlayers() {
 		return this.renderRemotePlayers;
@@ -40,6 +49,7 @@ public final class InfinitePlayerVisibilityConfig {
 
 	public InfinitePlayerVisibilityConfig copy() {
 		InfinitePlayerVisibilityConfig copy = new InfinitePlayerVisibilityConfig();
+		copy.enabled = this.enabled;
 		copy.renderRemotePlayers = this.renderRemotePlayers;
 		copy.renderRemoteEntities = this.renderRemoteEntities;
 		copy.visibilityDistanceBlocks = this.visibilityDistanceBlocks();
