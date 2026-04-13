@@ -5,7 +5,8 @@
 	"mixins": [
 		"ServerChunkLoadingManagerEntityTrackerAccessor",
 		"ServerChunkLoadingManagerMixin",
-		"ServerChunkLoadingManagerEntityTrackerMixin"
+		"ServerChunkLoadingManagerEntityTrackerMixin",
+		"ServerLevelMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

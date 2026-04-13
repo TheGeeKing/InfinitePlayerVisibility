@@ -8,6 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.animal.fish.AbstractFish;
+import net.minecraft.world.entity.animal.fish.WaterAnimal;
 import net.minecraft.world.phys.Vec3;
 
 public final class ClientEntityVisibility {
@@ -24,7 +27,7 @@ public final class ClientEntityVisibility {
 	}
 
 	public static boolean shouldForceClientTick(Entity entity) {
-		return shouldOverrideDistanceLimit(entity) && !entity.isAlwaysTicking() && isWithinConfiguredVisibility(entity);
+		return shouldOverrideDistanceLimit(entity) && !entity.isAlwaysTicking() && isWithinConfiguredVisibility(entity) && requiresForcedClientTick(entity);
 	}
 
 	public static boolean shouldKeepClientTicking(Entity entity) {
@@ -33,6 +36,12 @@ public final class ClientEntityVisibility {
 
 	public static boolean shouldRenderEntity(Entity entity) {
 		return shouldOverrideDistanceLimit(entity) && isWithinConfiguredVisibility(entity) && VoxyCompat.shouldRenderEntity(entity);
+	}
+
+	public static boolean shouldAssumeWaterState(Entity entity) {
+		return shouldForceClientTick(entity)
+			&& isAquaticEntity(entity)
+			&& !entity.isRemoved();
 	}
 
 	public static boolean hasRenderableEntityAt(ClientLevel world, BlockPos pos) {
@@ -93,5 +102,13 @@ public final class ClientEntityVisibility {
 
 	private static boolean shouldIndexRenderableEntity(Entity entity) {
 		return !entity.isRemoved() && shouldRenderEntity(entity);
+	}
+
+	private static boolean requiresForcedClientTick(Entity entity) {
+		return entity.level().isClientSide() && !entity.level().isLoaded(entity.blockPosition());
+	}
+
+	private static boolean isAquaticEntity(Entity entity) {
+		return entity instanceof AbstractFish || entity instanceof WaterAnimal || entity instanceof Axolotl;
 	}
 }

@@ -1,0 +1,19 @@
+package com.infiniteplayervisibility.mixin.server;
+
+import com.infiniteplayervisibility.test.SoloVisibilityAnchorManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin(ServerLevel.class)
+abstract class ServerLevelMixin {
+	@Inject(method = "isPositionEntityTicking", at = @At("RETURN"), cancellable = true)
+	private void infinitePlayerVisibility$allowSoloAnchorEntityTicking(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+		if (!cir.getReturnValueZ() && SoloVisibilityAnchorManager.keepsEntitiesTicking((ServerLevel)(Object)this, pos)) {
+			cir.setReturnValue(true);
+		}
+	}
+}
