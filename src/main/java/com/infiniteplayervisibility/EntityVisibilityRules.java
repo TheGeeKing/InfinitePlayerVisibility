@@ -17,6 +17,10 @@ public final class EntityVisibilityRules {
 		}
 
 		InfinitePlayerVisibilityConfig config = InfinitePlayerVisibilityConfigManager.getConfig();
+		if (!config.enabled()) {
+			return false;
+		}
+
 		return entity.isPlayer() ? config.renderRemotePlayers() : config.renderRemoteEntities();
 	}
 

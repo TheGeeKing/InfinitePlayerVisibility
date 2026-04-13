@@ -1,6 +1,7 @@
 {
 	"screen.infinite_player_visibility.title": "Infinite Player Visibility",
 	"screen.infinite_player_visibility.subtitle": "Ecran client. Copie le meme config sur le serveur pour le multijoueur.",
+	"option.infinite_player_visibility.enabled": "Activer le mod",
 	"option.infinite_player_visibility.remote_players": "Afficher les joueurs lointains",
 	"option.infinite_player_visibility.remote_entities": "Afficher les entites lointaines",
 	"option.infinite_player_visibility.visibility_distance": "Distance de visibilite: %s",

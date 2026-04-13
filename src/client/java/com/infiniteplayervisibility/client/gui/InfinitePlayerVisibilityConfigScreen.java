@@ -1,5 +1,6 @@
 package com.infiniteplayervisibility.client.gui;
 
+import com.infiniteplayervisibility.client.ClientEntityVisibility;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
 import net.minecraft.client.gui.DrawContext;
@@ -33,6 +34,14 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 		int leftX = centerX - OPTIONS_WIDTH / 2;
 		int y = 68;
 
+		this.addDrawableChild(
+			CyclingButtonWidget.onOffBuilder(this.workingCopy.enabled())
+				.build(leftX, y, OPTIONS_WIDTH, 20, Text.translatable("option.infinite_player_visibility.enabled"), (button, value) -> {
+					this.workingCopy.setEnabled(value);
+				})
+		);
+
+		y += 24;
 		this.addDrawableChild(
 			CyclingButtonWidget.onOffBuilder(this.workingCopy.renderRemotePlayers())
 				.build(leftX, y, OPTIONS_WIDTH, 20, Text.translatable("option.infinite_player_visibility.remote_players"), (button, value) -> {
@@ -72,6 +81,7 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 
 	private void saveAndClose() {
 		InfinitePlayerVisibilityConfigManager.setConfig(this.workingCopy);
+		ClientEntityVisibility.invalidateRenderableEntityPositionCache();
 		this.close();
 	}
 
