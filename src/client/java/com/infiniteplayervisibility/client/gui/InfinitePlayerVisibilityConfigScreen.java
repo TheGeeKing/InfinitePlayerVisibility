@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -60,6 +61,16 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 		y += 28;
 		this.addRenderableWidget(new VisibilityDistanceSlider(leftX, y, OPTIONS_WIDTH, 20, this.workingCopy.visibilityDistanceBlocks(), this.workingCopy));
 
+		y += 24;
+		this.addRenderableWidget(
+			CycleButton.builder(InfinitePlayerVisibilityConfigScreen::formatRemoteRenderDistanceMode, this.workingCopy.remoteRenderDistanceMode())
+				.withValues(InfinitePlayerVisibilityConfig.RemoteRenderDistanceMode.values())
+				.withTooltip(mode -> Tooltip.create(formatRemoteRenderDistanceModeTooltip(mode)))
+				.create(leftX, y, OPTIONS_WIDTH, 20, Component.translatable("option.infinite_player_visibility.remote_render_distance_mode"), (button, value) -> {
+					this.workingCopy.setRemoteRenderDistanceMode(value);
+				})
+		);
+
 		int bottomY = this.height - 28;
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.saveAndClose()).bounds(centerX - BUTTON_WIDTH - 5, bottomY, BUTTON_WIDTH, 20).build());
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.onClose()).bounds(centerX + 5, bottomY, BUTTON_WIDTH, 20).build());
@@ -105,6 +116,14 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 			String.format(Locale.ROOT, "%,d", chunks),
 			String.format(Locale.ROOT, "%,d", blocks)
 		);
+	}
+
+	private static Component formatRemoteRenderDistanceMode(InfinitePlayerVisibilityConfig.RemoteRenderDistanceMode mode) {
+		return Component.translatable("option.infinite_player_visibility.remote_render_distance_mode." + mode.name().toLowerCase(Locale.ROOT));
+	}
+
+	private static Component formatRemoteRenderDistanceModeTooltip(InfinitePlayerVisibilityConfig.RemoteRenderDistanceMode mode) {
+		return Component.translatable("option.infinite_player_visibility.remote_render_distance_mode." + mode.name().toLowerCase(Locale.ROOT) + ".tooltip");
 	}
 
 	private static final class VisibilityDistanceSlider extends AbstractSliderButton {

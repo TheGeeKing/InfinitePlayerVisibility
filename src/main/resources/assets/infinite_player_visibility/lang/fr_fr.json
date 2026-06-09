@@ -1,11 +1,16 @@
 {
 	"screen.infinite_player_visibility.title": "Infinite Player Visibility",
-	"screen.infinite_player_visibility.subtitle": "Ecran client. Copie le meme config sur le serveur pour le multijoueur.",
+	"screen.infinite_player_visibility.subtitle": "Écran client. Copiez la même configuration sur le serveur pour le multijoueur.",
 	"option.infinite_player_visibility.enabled": "Activer le mod",
 	"option.infinite_player_visibility.remote_players": "Afficher les joueurs lointains",
-	"option.infinite_player_visibility.remote_entities": "Afficher les entites lointaines",
-	"option.infinite_player_visibility.visibility_distance": "Distance de visibilite: %s",
+	"option.infinite_player_visibility.remote_entities": "Afficher les entités lointaines",
+	"option.infinite_player_visibility.visibility_distance": "Distance de visibilité: %s",
 	"option.infinite_player_visibility.visibility_distance.value": "%s chunks (%s blocs)",
-	"block.infinite_player_visibility.solo_visibility_anchor": "Ancre de visibilite solo",
-	"modmenu.descriptionTranslation.infinite_player_visibility": "Garde visibles les joueurs lointains et les entites simulees par le serveur sans charger leurs chunks."
+	"option.infinite_player_visibility.remote_render_distance_mode": "Mode de rendu lointain",
+	"option.infinite_player_visibility.remote_render_distance_mode.terrain_context": "Contexte terrain (recommandé)",
+	"option.infinite_player_visibility.remote_render_distance_mode.terrain_context.tooltip": "Limite le rendu lointain à la portée du terrain chargé pour éviter les joueurs et entités dans le vide.",
+	"option.infinite_player_visibility.remote_render_distance_mode.mod_distance": "Distance du mod",
+	"option.infinite_player_visibility.remote_render_distance_mode.mod_distance.tooltip": "Utilise seulement la distance de visibilité du mod, même au-delà du terrain chargé.",
+	"block.infinite_player_visibility.solo_visibility_anchor": "Ancre de visibilité solo",
+	"modmenu.descriptionTranslation.infinite_player_visibility": "Garde visibles les joueurs lointains et les entités simulées par le serveur sans charger leurs chunks."
 }
