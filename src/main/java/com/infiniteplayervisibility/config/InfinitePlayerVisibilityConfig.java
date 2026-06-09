@@ -1,10 +1,13 @@
 package com.infiniteplayervisibility.config;
 
-import com.infiniteplayervisibility.EntityVisibilityRules;
-
 public final class InfinitePlayerVisibilityConfig {
-	public static final int MIN_VISIBILITY_DISTANCE_BLOCKS = 64;
-	public static final int MAX_VISIBILITY_DISTANCE_BLOCKS = EntityVisibilityRules.INFINITE_TRACKING_DISTANCE_BLOCKS;
+	public static final int MIN_VISIBILITY_DISTANCE_CHUNKS = 20;
+	public static final int VISIBILITY_DISTANCE_STEP_CHANGE_CHUNKS = 100;
+	public static final int LOW_VISIBILITY_DISTANCE_STEP_CHUNKS = 6;
+	public static final int HIGH_VISIBILITY_DISTANCE_STEP_CHUNKS = 8;
+	public static final int MAX_VISIBILITY_DISTANCE_CHUNKS = 2048;
+	public static final int MIN_VISIBILITY_DISTANCE_BLOCKS = chunksToBlocks(MIN_VISIBILITY_DISTANCE_CHUNKS);
+	public static final int MAX_VISIBILITY_DISTANCE_BLOCKS = chunksToBlocks(MAX_VISIBILITY_DISTANCE_CHUNKS);
 	public static final int MIN_ANCHOR_RADIUS_BLOCKS = 0;
 	public static final int MAX_ANCHOR_RADIUS_BLOCKS = 128;
 	public static final int DEFAULT_ANCHOR_RADIUS_BLOCKS = 128;
@@ -56,7 +59,7 @@ public final class InfinitePlayerVisibilityConfig {
 	}
 
 	public boolean usesInfiniteVisibilityDistance() {
-		return this.visibilityDistanceBlocks() >= MAX_VISIBILITY_DISTANCE_BLOCKS;
+		return false;
 	}
 
 	public boolean enableSoloVisibilityAnchor() {
@@ -114,11 +117,41 @@ public final class InfinitePlayerVisibilityConfig {
 	}
 
 	public static int clampVisibilityDistanceBlocks(int visibilityDistanceBlocks) {
-		if (visibilityDistanceBlocks >= MAX_VISIBILITY_DISTANCE_BLOCKS) {
+		int chunks = (int)Math.ceil(visibilityDistanceBlocks / 16.0D);
+		if (chunks <= MIN_VISIBILITY_DISTANCE_CHUNKS) {
+			return MIN_VISIBILITY_DISTANCE_BLOCKS;
+		}
+
+		if (chunks >= MAX_VISIBILITY_DISTANCE_CHUNKS) {
 			return MAX_VISIBILITY_DISTANCE_BLOCKS;
 		}
 
-		return Math.max(MIN_VISIBILITY_DISTANCE_BLOCKS, visibilityDistanceBlocks);
+		return visibilityDistanceBlocksAtStep(nearestVisibilityDistanceStepIndex(visibilityDistanceBlocks));
+	}
+
+	public static int visibilityDistanceBlockStepCount() {
+		return getLowStepCount() + 1 + getHighStepCount();
+	}
+
+	public static int visibilityDistanceBlocksAtStep(int stepIndex) {
+		int clampedStepIndex = Math.max(0, Math.min(visibilityDistanceBlockStepCount() - 1, stepIndex));
+		int lowStepCount = getLowStepCount();
+		if (clampedStepIndex < lowStepCount) {
+			return chunksToBlocks(MIN_VISIBILITY_DISTANCE_CHUNKS + clampedStepIndex * LOW_VISIBILITY_DISTANCE_STEP_CHUNKS);
+		}
+
+		if (clampedStepIndex == lowStepCount) {
+			return chunksToBlocks(VISIBILITY_DISTANCE_STEP_CHANGE_CHUNKS);
+		}
+
+		int highStepIndex = clampedStepIndex - lowStepCount - 1;
+		int chunks = VISIBILITY_DISTANCE_STEP_CHANGE_CHUNKS + (highStepIndex + 1) * HIGH_VISIBILITY_DISTANCE_STEP_CHUNKS;
+		return chunksToBlocks(Math.min(MAX_VISIBILITY_DISTANCE_CHUNKS, chunks));
+	}
+
+	public static int visibilityDistanceStepIndex(int visibilityDistanceBlocks) {
+		int snappedBlocks = clampVisibilityDistanceBlocks(visibilityDistanceBlocks);
+		return nearestVisibilityDistanceStepIndex(snappedBlocks);
 	}
 
 	public static int clampAnchorRadiusBlocks(int anchorRadiusBlocks) {
@@ -138,5 +171,35 @@ public final class InfinitePlayerVisibilityConfig {
 		}
 
 		return Math.min(MAX_TRACKED_ENTITIES_PER_REFRESH, maxTrackedEntitiesPerRefresh);
+	}
+
+	private static int nearestVisibilityDistanceStepIndex(int visibilityDistanceBlocks) {
+		int bestIndex = 0;
+		int bestDistance = Integer.MAX_VALUE;
+		for (int index = 0; index < visibilityDistanceBlockStepCount(); index++) {
+			int distance = Math.abs(visibilityDistanceBlocksAtStep(index) - visibilityDistanceBlocks);
+			if (distance < bestDistance) {
+				bestIndex = index;
+				bestDistance = distance;
+			}
+		}
+
+		return bestIndex;
+	}
+
+	private static int getLowStepCount() {
+		return Math.floorDiv(
+			VISIBILITY_DISTANCE_STEP_CHANGE_CHUNKS - MIN_VISIBILITY_DISTANCE_CHUNKS - HIGH_VISIBILITY_DISTANCE_STEP_CHUNKS,
+			LOW_VISIBILITY_DISTANCE_STEP_CHUNKS
+		) + 1;
+	}
+
+	private static int getHighStepCount() {
+		int distanceAfterStepChange = MAX_VISIBILITY_DISTANCE_CHUNKS - VISIBILITY_DISTANCE_STEP_CHANGE_CHUNKS;
+		return (int)Math.ceil(distanceAfterStepChange / (double)HIGH_VISIBILITY_DISTANCE_STEP_CHUNKS);
+	}
+
+	private static int chunksToBlocks(int chunks) {
+		return chunks * 16;
 	}
 }

@@ -18,7 +18,7 @@ The mod can refresh remote entity tracking every few ticks so clients keep recei
 
 - `renderRemotePlayers`: renders distant players.
 - `renderRemoteEntities`: renders distant ticking entities.
-- `visibilityDistanceBlocks`: maximum render/tracking distance.
+- `visibilityDistanceBlocks`: maximum render/tracking distance. Values are clamped to Voxy-style distances from 20 to 2,048 chunks: 6-chunk steps below 100 chunks, then 8-chunk steps up to 2,048 chunks.
 - `remoteEntityTrackingIntervalTicks`: how often the server refreshes forced trackers. The default is `4`, matching the original behavior.
 - `maxTrackedEntitiesPerRefresh`: optional cap for refreshed forced entities per refresh. Use `0` for no cap.
 

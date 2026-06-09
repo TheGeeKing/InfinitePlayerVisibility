@@ -5,7 +5,6 @@
 	"option.infinite_player_visibility.remote_players": "Render distant players",
 	"option.infinite_player_visibility.remote_entities": "Render distant entities",
 	"option.infinite_player_visibility.visibility_distance": "Visibility distance: %s",
-	"option.infinite_player_visibility.visibility_distance.infinite": "Infinite",
 	"option.infinite_player_visibility.visibility_distance.value": "%s chunks (%s blocks)",
 	"block.infinite_player_visibility.solo_visibility_anchor": "Solo Visibility Anchor",
 	"modmenu.descriptionTranslation.infinite_player_visibility": "Keeps distant players and server-ticking entities visible without loading their chunks."

@@ -5,7 +5,6 @@
 	"option.infinite_player_visibility.remote_players": "Afficher les joueurs lointains",
 	"option.infinite_player_visibility.remote_entities": "Afficher les entites lointaines",
 	"option.infinite_player_visibility.visibility_distance": "Distance de visibilite: %s",
-	"option.infinite_player_visibility.visibility_distance.infinite": "Infinie",
 	"option.infinite_player_visibility.visibility_distance.value": "%s chunks (%s blocs)",
 	"block.infinite_player_visibility.solo_visibility_anchor": "Ancre de visibilite solo",
 	"modmenu.descriptionTranslation.infinite_player_visibility": "Garde visibles les joueurs lointains et les entites simulees par le serveur sans charger leurs chunks."

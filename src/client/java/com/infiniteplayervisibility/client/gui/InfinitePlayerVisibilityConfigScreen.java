@@ -86,32 +86,17 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 	}
 
 	private static double blocksToSliderValue(int blocks) {
-		if (blocks >= InfinitePlayerVisibilityConfig.MAX_VISIBILITY_DISTANCE_BLOCKS) {
-			return 1.0D;
-		}
-
-		double minLog = Math.log(InfinitePlayerVisibilityConfig.MIN_VISIBILITY_DISTANCE_BLOCKS);
-		double maxLog = Math.log(InfinitePlayerVisibilityConfig.MAX_VISIBILITY_DISTANCE_BLOCKS);
-		double clamped = Math.log(InfinitePlayerVisibilityConfig.clampVisibilityDistanceBlocks(blocks));
-		return (clamped - minLog) / (maxLog - minLog);
+		int maxIndex = InfinitePlayerVisibilityConfig.visibilityDistanceBlockStepCount() - 1;
+		return InfinitePlayerVisibilityConfig.visibilityDistanceStepIndex(blocks) / (double)maxIndex;
 	}
 
 	private static int sliderValueToBlocks(double value) {
-		if (value >= 0.999D) {
-			return InfinitePlayerVisibilityConfig.MAX_VISIBILITY_DISTANCE_BLOCKS;
-		}
-
-		double minLog = Math.log(InfinitePlayerVisibilityConfig.MIN_VISIBILITY_DISTANCE_BLOCKS);
-		double maxLog = Math.log(InfinitePlayerVisibilityConfig.MAX_VISIBILITY_DISTANCE_BLOCKS);
-		double interpolated = Math.exp(minLog + value * (maxLog - minLog));
-		return InfinitePlayerVisibilityConfig.clampVisibilityDistanceBlocks((int)Math.round(interpolated));
+		int maxIndex = InfinitePlayerVisibilityConfig.visibilityDistanceBlockStepCount() - 1;
+		int stepIndex = (int)Math.round(value * maxIndex);
+		return InfinitePlayerVisibilityConfig.visibilityDistanceBlocksAtStep(stepIndex);
 	}
 
 	private static Component formatDistanceText(int blocks) {
-		if (blocks >= InfinitePlayerVisibilityConfig.MAX_VISIBILITY_DISTANCE_BLOCKS) {
-			return Component.translatable("option.infinite_player_visibility.visibility_distance.infinite");
-		}
-
 		int chunks = Math.max(1, (int)Math.ceil(blocks / 16.0D));
 		return Component.translatable(
 			"option.infinite_player_visibility.visibility_distance.value",
