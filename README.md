@@ -50,3 +50,26 @@ This project targets Java 25.
 ```
 
 The remapped JAR will be located in build/libs/.
+
+## Dependency audit
+
+Run an OWASP Dependency-Check scan with:
+
+```powershell
+.\gradlew.bat dependencyCheckAnalyze
+```
+
+If you have an NVD API key, provide it with either a Gradle property:
+
+```powershell
+.\gradlew.bat dependencyCheckAnalyze -PnvdApiKey=YOUR_KEY
+```
+
+or an environment variable:
+
+```powershell
+$env:NVD_API_KEY="YOUR_KEY"
+.\gradlew.bat dependencyCheckAnalyze
+```
+
+The HTML report is written to `build/reports/dependency-check-report.html`.

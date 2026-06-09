@@ -1,5 +1,6 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'org.owasp.dependencycheck' version "${dependency_check_version}"
 	id 'maven-publish'
 }
 
@@ -98,5 +99,11 @@ publishing {
 		// Notice: This block does NOT have the same function as the block in the top level.
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
+	}
+}
+
+dependencyCheck {
+	nvd {
+		apiKey = providers.gradleProperty("nvdApiKey").orElse(providers.environmentVariable("NVD_API_KEY")).orNull
 	}
 }
