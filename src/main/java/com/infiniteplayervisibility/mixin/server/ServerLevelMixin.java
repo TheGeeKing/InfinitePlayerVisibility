@@ -1,6 +1,6 @@
 package com.infiniteplayervisibility.mixin.server;
 
-import com.infiniteplayervisibility.test.SoloVisibilityAnchorManager;
+import com.infiniteplayervisibility.anchor.SoloVisibilityAnchorManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;

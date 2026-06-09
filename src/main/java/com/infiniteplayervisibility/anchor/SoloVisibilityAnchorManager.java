@@ -1,4 +1,4 @@
-package com.infiniteplayervisibility.test;
+package com.infiniteplayervisibility.anchor;
 
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.Map;

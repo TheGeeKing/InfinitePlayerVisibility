@@ -1,4 +1,4 @@
-package com.infiniteplayervisibility.test;
+package com.infiniteplayervisibility.anchor;
 
 import com.infiniteplayervisibility.InfinitePlayerVisibilityMod;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
-public final class SoloVisibilityTestContent {
+public final class SoloVisibilityAnchorContent {
 	public static final Identifier SOLO_VISIBILITY_ANCHOR_ID = Identifier.fromNamespaceAndPath(InfinitePlayerVisibilityMod.MOD_ID, "solo_visibility_anchor");
 	private static final ResourceKey<Block> SOLO_VISIBILITY_ANCHOR_BLOCK_KEY = ResourceKey.create(Registries.BLOCK, SOLO_VISIBILITY_ANCHOR_ID);
 	private static final ResourceKey<Item> SOLO_VISIBILITY_ANCHOR_ITEM_KEY = ResourceKey.create(Registries.ITEM, SOLO_VISIBILITY_ANCHOR_ID);
@@ -46,10 +46,10 @@ public final class SoloVisibilityTestContent {
 		FabricBlockEntityTypeBuilder.create(SoloVisibilityAnchorBlockEntity::new, SOLO_VISIBILITY_ANCHOR).build()
 	);
 
-	private SoloVisibilityTestContent() {
+	private SoloVisibilityAnchorContent() {
 	}
 
 	public static void initialize() {
-		InfinitePlayerVisibilityMod.LOGGER.info("Registered solo visibility test content.");
+		InfinitePlayerVisibilityMod.LOGGER.info("Registered solo visibility anchor content.");
 	}
 }

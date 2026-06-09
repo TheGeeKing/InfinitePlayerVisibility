@@ -1,4 +1,4 @@
-package com.infiniteplayervisibility.test;
+package com.infiniteplayervisibility.anchor;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -41,6 +41,6 @@ public final class SoloVisibilityAnchorBlock extends BaseEntityBlock {
 			return null;
 		}
 
-		return createTickerHelper(type, SoloVisibilityTestContent.SOLO_VISIBILITY_ANCHOR_BLOCK_ENTITY, SoloVisibilityAnchorBlockEntity::serverTick);
+		return createTickerHelper(type, SoloVisibilityAnchorContent.SOLO_VISIBILITY_ANCHOR_BLOCK_ENTITY, SoloVisibilityAnchorBlockEntity::serverTick);
 	}
 }
