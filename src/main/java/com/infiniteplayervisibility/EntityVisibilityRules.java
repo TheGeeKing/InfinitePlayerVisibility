@@ -12,20 +12,12 @@ public final class EntityVisibilityRules {
 	}
 
 	public static boolean shouldForceRemoteTracking(Entity entity) {
-		if (entity.isRemoved()) {
-			return false;
-		}
-
-		InfinitePlayerVisibilityConfig config = InfinitePlayerVisibilityConfigManager.getConfig();
-		if (!config.enabled()) {
-			return false;
-		}
-
-		return entity.isAlwaysTicking() ? config.renderRemotePlayers() : config.renderRemoteEntities();
+		return shouldForceRemoteTracking(entity, InfinitePlayerVisibilityConfigManager.getConfig());
 	}
 
 	public static int getConfiguredTrackingDistanceBlocks(Entity entity) {
-		return shouldForceRemoteTracking(entity) ? InfinitePlayerVisibilityConfigManager.getConfig().visibilityDistanceBlocks() : 0;
+		InfinitePlayerVisibilityConfig config = InfinitePlayerVisibilityConfigManager.getConfig();
+		return shouldForceRemoteTracking(entity, config) ? config.visibilityDistanceBlocks() : 0;
 	}
 
 	public static boolean shouldForceServerTracking(Entity entity) {
@@ -33,10 +25,26 @@ public final class EntityVisibilityRules {
 			return false;
 		}
 
-		if (entity.isAlwaysTicking()) {
+		if (usesPlayerVisibilityRule(entity)) {
 			return true;
 		}
 
 		return entity.level() instanceof ServerLevel serverWorld && serverWorld.isPositionEntityTicking(entity.blockPosition());
+	}
+
+	private static boolean shouldForceRemoteTracking(Entity entity, InfinitePlayerVisibilityConfig config) {
+		if (entity.isRemoved()) {
+			return false;
+		}
+
+		if (!config.enabled()) {
+			return false;
+		}
+
+		return usesPlayerVisibilityRule(entity) ? config.renderRemotePlayers() : config.renderRemoteEntities();
+	}
+
+	private static boolean usesPlayerVisibilityRule(Entity entity) {
+		return entity.isAlwaysTicking();
 	}
 }
