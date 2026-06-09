@@ -18,6 +18,9 @@
 		"main": [
 			"com.infiniteplayervisibility.InfinitePlayerVisibilityMod"
 		],
+		"client": [
+			"com.infiniteplayervisibility.client.InfinitePlayerVisibilityClientMod"
+		],
 		"modmenu": [
 			"com.infiniteplayervisibility.client.modmenu.InfinitePlayerVisibilityModMenuApi"
 		]

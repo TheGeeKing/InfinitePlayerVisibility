@@ -17,10 +17,16 @@ public final class InfinitePlayerVisibilityConfig {
 	public static final int UNLIMITED_TRACKED_ENTITIES_PER_REFRESH = 0;
 	public static final int MAX_TRACKED_ENTITIES_PER_REFRESH = 1000000;
 
+	public enum RemoteRenderDistanceMode {
+		MOD_DISTANCE,
+		TERRAIN_CONTEXT
+	}
+
 	private boolean enabled = true;
 	private boolean renderRemotePlayers = true;
 	private boolean renderRemoteEntities = true;
 	private int visibilityDistanceBlocks = MAX_VISIBILITY_DISTANCE_BLOCKS;
+	private RemoteRenderDistanceMode remoteRenderDistanceMode = RemoteRenderDistanceMode.TERRAIN_CONTEXT;
 	private boolean enableSoloVisibilityAnchor = true;
 	private int anchorRadiusBlocks = DEFAULT_ANCHOR_RADIUS_BLOCKS;
 	private int remoteEntityTrackingIntervalTicks = DEFAULT_REMOTE_ENTITY_TRACKING_INTERVAL_TICKS;
@@ -62,6 +68,14 @@ public final class InfinitePlayerVisibilityConfig {
 		return false;
 	}
 
+	public RemoteRenderDistanceMode remoteRenderDistanceMode() {
+		return this.remoteRenderDistanceMode == null ? RemoteRenderDistanceMode.TERRAIN_CONTEXT : this.remoteRenderDistanceMode;
+	}
+
+	public void setRemoteRenderDistanceMode(RemoteRenderDistanceMode remoteRenderDistanceMode) {
+		this.remoteRenderDistanceMode = remoteRenderDistanceMode == null ? RemoteRenderDistanceMode.TERRAIN_CONTEXT : remoteRenderDistanceMode;
+	}
+
 	public boolean enableSoloVisibilityAnchor() {
 		return this.enableSoloVisibilityAnchor;
 	}
@@ -100,6 +114,7 @@ public final class InfinitePlayerVisibilityConfig {
 		copy.renderRemotePlayers = this.renderRemotePlayers;
 		copy.renderRemoteEntities = this.renderRemoteEntities;
 		copy.visibilityDistanceBlocks = this.visibilityDistanceBlocks();
+		copy.remoteRenderDistanceMode = this.remoteRenderDistanceMode();
 		copy.enableSoloVisibilityAnchor = this.enableSoloVisibilityAnchor;
 		copy.anchorRadiusBlocks = this.anchorRadiusBlocks();
 		copy.remoteEntityTrackingIntervalTicks = this.remoteEntityTrackingIntervalTicks();
@@ -110,6 +125,7 @@ public final class InfinitePlayerVisibilityConfig {
 	public InfinitePlayerVisibilityConfig sanitizedCopy() {
 		InfinitePlayerVisibilityConfig copy = this.copy();
 		copy.visibilityDistanceBlocks = copy.visibilityDistanceBlocks();
+		copy.remoteRenderDistanceMode = copy.remoteRenderDistanceMode();
 		copy.anchorRadiusBlocks = copy.anchorRadiusBlocks();
 		copy.remoteEntityTrackingIntervalTicks = copy.remoteEntityTrackingIntervalTicks();
 		copy.maxTrackedEntitiesPerRefresh = copy.maxTrackedEntitiesPerRefresh();

@@ -108,7 +108,10 @@ public final class ClientEntityVisibility {
 	}
 
 	private static boolean isWithinConfiguredVisibility(Entity entity) {
-		int visibilityDistance = EntityVisibilityRules.getConfiguredTrackingDistanceBlocks(entity);
+		int visibilityDistance = Math.min(
+			EntityVisibilityRules.getConfiguredTrackingDistanceBlocks(entity),
+			ClientVisibilityDistanceReporter.getEffectiveVisibilityDistanceBlocks()
+		);
 		if (visibilityDistance >= EntityVisibilityRules.INFINITE_TRACKING_DISTANCE_BLOCKS) {
 			return true;
 		}

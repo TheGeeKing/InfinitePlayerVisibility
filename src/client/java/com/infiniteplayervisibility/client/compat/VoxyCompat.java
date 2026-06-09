@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.OptionalInt;
 
 public final class VoxyCompat {
 	private static final String VOXY_MOD_ID = "voxy";
@@ -50,6 +51,10 @@ public final class VoxyCompat {
 
 	public static boolean shouldRenderUnloadedPlayer(net.minecraft.world.entity.player.Player player) {
 		return shouldRenderEntity(player);
+	}
+
+	public static OptionalInt getConfiguredRenderDistanceBlocks() {
+		return OptionalInt.empty();
 	}
 
 	public static boolean shouldRenderEntity(Entity entity) {

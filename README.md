@@ -19,8 +19,11 @@ The mod can refresh remote entity tracking every few ticks so clients keep recei
 - `renderRemotePlayers`: renders distant players.
 - `renderRemoteEntities`: renders distant ticking entities.
 - `visibilityDistanceBlocks`: maximum render/tracking distance. Values are clamped to Voxy-style distances from 20 to 2,048 chunks: 6-chunk steps below 100 chunks, then 8-chunk steps up to 2,048 chunks.
+- `remoteRenderDistanceMode`: controls how the client caps remote rendering. `TERRAIN_CONTEXT` keeps remote entities within the client's terrain context; `MOD_DISTANCE` uses only the mod distance.
 - `remoteEntityTrackingIntervalTicks`: how often the server refreshes forced trackers. The default is `4`, matching the original behavior.
 - `maxTrackedEntitiesPerRefresh`: optional cap for refreshed forced entities per refresh. Use `0` for no cap.
+
+Clients report their effective render cap to the server. The server then uses the lower of its own config and each client's cap, so a client rendering 32 chunks is not force-sent entities out to 64 chunks.
 
 ## Solo Visibility Anchor
 

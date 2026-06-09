@@ -1,6 +1,7 @@
 package com.infiniteplayervisibility.client.gui;
 
 import com.infiniteplayervisibility.client.ClientEntityVisibility;
+import com.infiniteplayervisibility.client.ClientVisibilityDistanceReporter;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
 import java.util.Locale;
@@ -82,6 +83,7 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 	private void saveAndClose() {
 		InfinitePlayerVisibilityConfigManager.setConfig(this.workingCopy);
 		ClientEntityVisibility.invalidateRenderableEntityPositionCache();
+		ClientVisibilityDistanceReporter.sendCurrentDistance();
 		this.onClose();
 	}
 

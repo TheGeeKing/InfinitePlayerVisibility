@@ -46,6 +46,22 @@ final class InfinitePlayerVisibilityConfigTest {
 	}
 
 	@Test
+	void defaultsRemoteRenderDistanceToTerrainContext() {
+		InfinitePlayerVisibilityConfig config = new InfinitePlayerVisibilityConfig();
+
+		assertEquals(InfinitePlayerVisibilityConfig.RemoteRenderDistanceMode.TERRAIN_CONTEXT, config.remoteRenderDistanceMode());
+	}
+
+	@Test
+	void sanitizesNullRemoteRenderDistanceMode() {
+		InfinitePlayerVisibilityConfig config = new InfinitePlayerVisibilityConfig();
+
+		config.setRemoteRenderDistanceMode(null);
+
+		assertEquals(InfinitePlayerVisibilityConfig.RemoteRenderDistanceMode.TERRAIN_CONTEXT, config.remoteRenderDistanceMode());
+	}
+
+	@Test
 	void sanitizesOldInfiniteVisibilityConfigValues() {
 		InfinitePlayerVisibilityConfig config = new InfinitePlayerVisibilityConfig();
 

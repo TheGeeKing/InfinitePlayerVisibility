@@ -1,7 +1,9 @@
 package com.infiniteplayervisibility.mixin.server;
 
 import com.infiniteplayervisibility.EntityVisibilityRules;
+import com.infiniteplayervisibility.network.ClientVisibilityDistancePreferences;
 import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,9 +21,9 @@ abstract class ServerChunkLoadingManagerEntityTrackerMixin {
 		method = "updatePlayer(Lnet/minecraft/server/level/ServerPlayer;)V",
 		at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I")
 	)
-	private int infinitePlayerVisibility$removeDistanceCap(int trackedDistance, int watchedDistance) {
+	private int infinitePlayerVisibility$removeDistanceCap(int trackedDistance, int watchedDistance, ServerPlayer player) {
 		return EntityVisibilityRules.shouldForceServerTracking(this.entity)
-			? EntityVisibilityRules.getConfiguredTrackingDistanceBlocks(this.entity)
+			? Math.min(EntityVisibilityRules.getConfiguredTrackingDistanceBlocks(this.entity), ClientVisibilityDistancePreferences.get(player))
 			: Math.min(trackedDistance, watchedDistance);
 	}
 
