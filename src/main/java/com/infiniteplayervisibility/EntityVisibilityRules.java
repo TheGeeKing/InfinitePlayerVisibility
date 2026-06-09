@@ -4,6 +4,7 @@ import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 public final class EntityVisibilityRules {
 	public static final int INFINITE_TRACKING_DISTANCE_BLOCKS = 30000000;
@@ -45,6 +46,6 @@ public final class EntityVisibilityRules {
 	}
 
 	private static boolean usesPlayerVisibilityRule(Entity entity) {
-		return entity.isAlwaysTicking();
+		return entity instanceof Player;
 	}
 }
