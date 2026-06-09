@@ -14,10 +14,10 @@ import net.minecraft.world.entity.animal.fish.WaterAnimal;
 import net.minecraft.world.phys.Vec3;
 
 public final class ClientEntityVisibility {
-	private static final LongSet RENDERABLE_ENTITY_POSITIONS = new LongOpenHashSet();
-	private static ClientLevel cachedRenderableEntityWorld;
-	private static long cachedRenderableEntityWorldTime = Long.MIN_VALUE;
-	private static long cachedRenderableEntityCameraPos = Long.MIN_VALUE;
+	private static final LongSet RENDERABLE_ENTITY_BLOCK_POSITIONS = new LongOpenHashSet();
+	private static ClientLevel cachedRenderableEntityLevel;
+	private static long cachedRenderableEntityGameTime = Long.MIN_VALUE;
+	private static long cachedCameraBlockPos = Long.MIN_VALUE;
 
 	private ClientEntityVisibility() {
 	}
@@ -27,7 +27,10 @@ public final class ClientEntityVisibility {
 	}
 
 	public static boolean shouldForceClientTick(Entity entity) {
-		return shouldOverrideDistanceLimit(entity) && !entity.isAlwaysTicking() && isWithinConfiguredVisibility(entity) && requiresForcedClientTick(entity);
+		return shouldOverrideDistanceLimit(entity)
+			&& canBeForceTickedOnClient(entity)
+			&& isWithinConfiguredVisibility(entity)
+			&& isOutsideLoadedClientChunks(entity);
 	}
 
 	public static boolean shouldKeepClientTicking(Entity entity) {
@@ -46,14 +49,52 @@ public final class ClientEntityVisibility {
 
 	public static boolean hasRenderableEntityAt(ClientLevel world, BlockPos pos) {
 		refreshRenderableEntityPositionCache(world);
-		return RENDERABLE_ENTITY_POSITIONS.contains(pos.asLong());
+		return RENDERABLE_ENTITY_BLOCK_POSITIONS.contains(pos.asLong());
 	}
 
 	public static void invalidateRenderableEntityPositionCache() {
-		cachedRenderableEntityWorld = null;
-		cachedRenderableEntityWorldTime = Long.MIN_VALUE;
-		cachedRenderableEntityCameraPos = Long.MIN_VALUE;
-		RENDERABLE_ENTITY_POSITIONS.clear();
+		cachedRenderableEntityLevel = null;
+		cachedRenderableEntityGameTime = Long.MIN_VALUE;
+		cachedCameraBlockPos = Long.MIN_VALUE;
+		RENDERABLE_ENTITY_BLOCK_POSITIONS.clear();
+	}
+
+	private static void refreshRenderableEntityPositionCache(ClientLevel world) {
+		long worldTime = world.getGameTime();
+		long cameraPos = getCameraBlockPos();
+		if (isRenderableEntityCacheFresh(world, worldTime, cameraPos)) {
+			return;
+		}
+
+		RENDERABLE_ENTITY_BLOCK_POSITIONS.clear();
+		for (Entity entity : world.entitiesForRendering()) {
+			if (shouldIndexRenderableEntity(entity)) {
+				RENDERABLE_ENTITY_BLOCK_POSITIONS.add(entity.blockPosition().asLong());
+			}
+		}
+
+		cachedRenderableEntityLevel = world;
+		cachedRenderableEntityGameTime = worldTime;
+		cachedCameraBlockPos = cameraPos;
+	}
+
+	private static boolean isRenderableEntityCacheFresh(ClientLevel world, long worldTime, long cameraPos) {
+		return world == cachedRenderableEntityLevel
+			&& worldTime == cachedRenderableEntityGameTime
+			&& cameraPos == cachedCameraBlockPos;
+	}
+
+	private static long getCameraBlockPos() {
+		Minecraft client = Minecraft.getInstance();
+		if (client.gameRenderer == null || client.gameRenderer.getMainCamera() == null) {
+			return Long.MIN_VALUE;
+		}
+
+		return BlockPos.containing(client.gameRenderer.getMainCamera().position()).asLong();
+	}
+
+	private static boolean shouldIndexRenderableEntity(Entity entity) {
+		return !entity.isRemoved() && shouldRenderEntity(entity);
 	}
 
 	private static boolean isWithinConfiguredVisibility(Entity entity) {
@@ -72,39 +113,11 @@ public final class ClientEntityVisibility {
 		return entity.distanceToSqr(cameraPos.x, cameraPos.y, cameraPos.z) <= maxDistance * maxDistance;
 	}
 
-	private static void refreshRenderableEntityPositionCache(ClientLevel world) {
-		long worldTime = world.getGameTime();
-		long cameraPos = getCameraBlockPos();
-		if (world == cachedRenderableEntityWorld && worldTime == cachedRenderableEntityWorldTime && cameraPos == cachedRenderableEntityCameraPos) {
-			return;
-		}
-
-		RENDERABLE_ENTITY_POSITIONS.clear();
-		for (Entity entity : world.entitiesForRendering()) {
-			if (shouldIndexRenderableEntity(entity)) {
-				RENDERABLE_ENTITY_POSITIONS.add(entity.blockPosition().asLong());
-			}
-		}
-
-		cachedRenderableEntityWorld = world;
-		cachedRenderableEntityWorldTime = worldTime;
-		cachedRenderableEntityCameraPos = cameraPos;
+	private static boolean canBeForceTickedOnClient(Entity entity) {
+		return !entity.isAlwaysTicking();
 	}
 
-	private static long getCameraBlockPos() {
-		Minecraft client = Minecraft.getInstance();
-		if (client.gameRenderer == null || client.gameRenderer.getMainCamera() == null) {
-			return Long.MIN_VALUE;
-		}
-
-		return BlockPos.containing(client.gameRenderer.getMainCamera().position()).asLong();
-	}
-
-	private static boolean shouldIndexRenderableEntity(Entity entity) {
-		return !entity.isRemoved() && shouldRenderEntity(entity);
-	}
-
-	private static boolean requiresForcedClientTick(Entity entity) {
+	private static boolean isOutsideLoadedClientChunks(Entity entity) {
 		return entity.level().isClientSide() && !entity.level().isLoaded(entity.blockPosition());
 	}
 
