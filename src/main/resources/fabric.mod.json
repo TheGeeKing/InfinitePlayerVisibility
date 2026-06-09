@@ -5,7 +5,7 @@
 	"name": "Infinite Player Visibility",
 	"description": "Permet aux joueurs de rester visibles meme a tres grande distance, sans charger leurs chunks.",
 	"authors": [
-		"Codex"
+		"tristancrazy"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
