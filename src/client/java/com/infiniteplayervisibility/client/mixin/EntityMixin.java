@@ -12,10 +12,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 abstract class EntityMixin {
-	@Inject(method = "shouldRenderAtSqrDistance(D)Z", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "shouldRenderAtSqrDistance(D)Z", at = @At("RETURN"), cancellable = true)
 	private void infinitePlayerVisibility$allowRemoteEntityRendering(double distance, CallbackInfoReturnable<Boolean> cir) {
+		if (cir.getReturnValueZ()) {
+			return;
+		}
+
 		Entity entity = (Entity)(Object)this;
-		if (ClientEntityVisibility.shouldOverrideDistanceLimit(entity)) {
+		if (ClientEntityVisibility.shouldOverrideVanillaDistanceLimit(entity)) {
 			cir.setReturnValue(ClientEntityVisibility.shouldRenderEntity(entity));
 		}
 	}

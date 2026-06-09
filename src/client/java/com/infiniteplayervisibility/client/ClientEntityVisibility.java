@@ -37,6 +37,16 @@ public final class ClientEntityVisibility {
 		return shouldForceClientTick(entity) && !entity.isRemoved();
 	}
 
+	public static boolean shouldOverrideVanillaRendering(Entity entity) {
+		return shouldOverrideDistanceLimit(entity)
+			&& isWithinConfiguredVisibility(entity)
+			&& isOutsideLoadedClientChunks(entity);
+	}
+
+	public static boolean shouldOverrideVanillaDistanceLimit(Entity entity) {
+		return shouldOverrideDistanceLimit(entity) && isWithinConfiguredVisibility(entity);
+	}
+
 	public static boolean shouldRenderEntity(Entity entity) {
 		return shouldOverrideDistanceLimit(entity) && isWithinConfiguredVisibility(entity) && VoxyCompat.shouldRenderEntity(entity);
 	}

@@ -26,7 +26,7 @@ abstract class EntityRenderManagerMixin {
 		double z,
 		CallbackInfoReturnable<Boolean> cir
 	) {
-		if (!ClientEntityVisibility.shouldOverrideDistanceLimit(entity)) {
+		if (!ClientEntityVisibility.shouldOverrideVanillaRendering(entity)) {
 			return;
 		}
 
