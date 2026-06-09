@@ -1,5 +1,7 @@
 package com.infiniteplayervisibility.anchor;
 
+import com.infiniteplayervisibility.InfinitePlayerVisibilityMod;
+import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -9,15 +11,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 
 public final class SoloVisibilityAnchorManager {
-	public static final int ANCHOR_RADIUS_BLOCKS = 128;
-	private static final int ANCHOR_CHUNK_RADIUS = (ANCHOR_RADIUS_BLOCKS + 15) / 16;
 	private static final Map<ServerLevel, WorldAnchors> WORLD_ANCHORS = new WeakHashMap<>();
 
 	private SoloVisibilityAnchorManager() {
 	}
 
-	public static void register(ServerLevel level, BlockPos pos) {
-		WORLD_ANCHORS.computeIfAbsent(level, WorldAnchors::new).register(pos);
+	public static void register(ServerLevel level, BlockPos pos, int radiusBlocks) {
+		WORLD_ANCHORS.computeIfAbsent(level, WorldAnchors::new).register(pos, radiusBlocks);
+	}
+
+	public static void refresh(ServerLevel level, BlockPos pos, int radiusBlocks) {
+		WORLD_ANCHORS.computeIfAbsent(level, WorldAnchors::new).refresh(pos, radiusBlocks);
 	}
 
 	public static void unregister(ServerLevel level, BlockPos pos) {
@@ -40,22 +44,46 @@ public final class SoloVisibilityAnchorManager {
 	private static final class WorldAnchors {
 		private final ServerLevel level;
 		private final Long2IntOpenHashMap anchorCounts = new Long2IntOpenHashMap();
+		private final Long2IntOpenHashMap anchorRadii = new Long2IntOpenHashMap();
 		private final Long2IntOpenHashMap forcedChunkCounts = new Long2IntOpenHashMap();
 
 		private WorldAnchors(ServerLevel level) {
 			this.level = level;
 			this.anchorCounts.defaultReturnValue(0);
+			this.anchorRadii.defaultReturnValue(InfinitePlayerVisibilityConfig.DEFAULT_ANCHOR_RADIUS_BLOCKS);
 			this.forcedChunkCounts.defaultReturnValue(0);
 		}
 
-		private void register(BlockPos pos) {
+		private void register(BlockPos pos, int radiusBlocks) {
+			int clampedRadiusBlocks = InfinitePlayerVisibilityConfig.clampAnchorRadiusBlocks(radiusBlocks);
 			long anchorKey = pos.asLong();
 			int newAnchorCount = this.anchorCounts.addTo(anchorKey, 1) + 1;
 			if (newAnchorCount > 1) {
 				return;
 			}
 
-			this.updateForcedChunks(pos, true);
+			this.anchorRadii.put(anchorKey, clampedRadiusBlocks);
+			this.logAnchorForcedChunks(pos, clampedRadiusBlocks, "registered");
+			this.updateForcedChunks(pos, clampedRadiusBlocks, true);
+		}
+
+		private void refresh(BlockPos pos, int radiusBlocks) {
+			long anchorKey = pos.asLong();
+			if (!this.anchorCounts.containsKey(anchorKey)) {
+				this.register(pos, radiusBlocks);
+				return;
+			}
+
+			int clampedRadiusBlocks = InfinitePlayerVisibilityConfig.clampAnchorRadiusBlocks(radiusBlocks);
+			int currentRadiusBlocks = this.anchorRadii.get(anchorKey);
+			if (currentRadiusBlocks == clampedRadiusBlocks) {
+				return;
+			}
+
+			this.updateForcedChunks(pos, currentRadiusBlocks, false);
+			this.anchorRadii.put(anchorKey, clampedRadiusBlocks);
+			this.logAnchorForcedChunks(pos, clampedRadiusBlocks, "updated");
+			this.updateForcedChunks(pos, clampedRadiusBlocks, true);
 		}
 
 		private void unregister(BlockPos pos) {
@@ -67,7 +95,8 @@ public final class SoloVisibilityAnchorManager {
 
 			if (currentAnchorCount == 1) {
 				this.anchorCounts.remove(anchorKey);
-				this.updateForcedChunks(pos, false);
+				int radiusBlocks = this.anchorRadii.remove(anchorKey);
+				this.updateForcedChunks(pos, radiusBlocks, false);
 				return;
 			}
 
@@ -83,12 +112,13 @@ public final class SoloVisibilityAnchorManager {
 			return this.anchorCounts.isEmpty();
 		}
 
-		private void updateForcedChunks(BlockPos pos, boolean register) {
+		private void updateForcedChunks(BlockPos pos, int radiusBlocks, boolean register) {
 			int centerChunkX = SectionPos.blockToSectionCoord(pos.getX());
 			int centerChunkZ = SectionPos.blockToSectionCoord(pos.getZ());
+			int chunkRadius = getChunkRadius(radiusBlocks);
 
-			for (int chunkX = centerChunkX - ANCHOR_CHUNK_RADIUS; chunkX <= centerChunkX + ANCHOR_CHUNK_RADIUS; chunkX++) {
-				for (int chunkZ = centerChunkZ - ANCHOR_CHUNK_RADIUS; chunkZ <= centerChunkZ + ANCHOR_CHUNK_RADIUS; chunkZ++) {
+			for (int chunkX = centerChunkX - chunkRadius; chunkX <= centerChunkX + chunkRadius; chunkX++) {
+				for (int chunkZ = centerChunkZ - chunkRadius; chunkZ <= centerChunkZ + chunkRadius; chunkZ++) {
 					this.updateForcedChunk(chunkX, chunkZ, register);
 				}
 			}
@@ -113,6 +143,23 @@ public final class SoloVisibilityAnchorManager {
 			}
 
 			this.forcedChunkCounts.put(chunkKey, currentCount - 1);
+		}
+
+		private void logAnchorForcedChunks(BlockPos pos, int radiusBlocks, String action) {
+			int chunkRadius = getChunkRadius(radiusBlocks);
+			int chunkDiameter = chunkRadius * 2 + 1;
+			InfinitePlayerVisibilityMod.LOGGER.warn(
+				"Solo visibility anchor {} force-loading chunks in dimension {} at {} with radius {} blocks ({} chunks).",
+				action,
+				this.level.dimension(),
+				pos,
+				radiusBlocks,
+				chunkDiameter * chunkDiameter
+			);
+		}
+
+		private static int getChunkRadius(int radiusBlocks) {
+			return (InfinitePlayerVisibilityConfig.clampAnchorRadiusBlocks(radiusBlocks) + 15) / 16;
 		}
 	}
 }

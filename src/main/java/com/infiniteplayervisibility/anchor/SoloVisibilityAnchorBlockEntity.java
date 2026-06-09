@@ -1,5 +1,7 @@
 package com.infiniteplayervisibility.anchor;
 
+import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
+import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -18,10 +20,22 @@ public final class SoloVisibilityAnchorBlockEntity extends BlockEntity {
 			return;
 		}
 
-		if (!blockEntity.registered) {
-			SoloVisibilityAnchorManager.register(serverLevel, pos);
-			blockEntity.registered = true;
+		InfinitePlayerVisibilityConfig config = InfinitePlayerVisibilityConfigManager.getConfig();
+		if (!config.enableSoloVisibilityAnchor()) {
+			if (blockEntity.registered) {
+				SoloVisibilityAnchorManager.unregister(serverLevel, pos);
+				blockEntity.registered = false;
+			}
+			return;
 		}
+
+		if (!blockEntity.registered) {
+			SoloVisibilityAnchorManager.register(serverLevel, pos, config.anchorRadiusBlocks());
+			blockEntity.registered = true;
+			return;
+		}
+
+		SoloVisibilityAnchorManager.refresh(serverLevel, pos, config.anchorRadiusBlocks());
 	}
 
 	@Override
