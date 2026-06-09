@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -17,8 +18,10 @@ import net.minecraft.network.chat.Component;
 public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 	private static final Component TITLE = Component.translatable("screen.infinite_player_visibility.title");
 	private static final Component SUBTITLE = Component.translatable("screen.infinite_player_visibility.subtitle");
-	private static final int OPTIONS_WIDTH = 240;
+	private static final int OPTIONS_WIDTH = 320;
 	private static final int BUTTON_WIDTH = 115;
+	private static final int MODE_LABEL_WIDTH = 104;
+	private static final int MODE_BUTTON_WIDTH = OPTIONS_WIDTH - MODE_LABEL_WIDTH;
 
 	private final Screen parent;
 	private final InfinitePlayerVisibilityConfig workingCopy;
@@ -63,10 +66,21 @@ public final class InfinitePlayerVisibilityConfigScreen extends Screen {
 
 		y += 24;
 		this.addRenderableWidget(
+			new StringWidget(
+				leftX,
+				y,
+				MODE_LABEL_WIDTH,
+				20,
+				Component.translatable("option.infinite_player_visibility.remote_render_distance_mode"),
+				this.font
+			)
+		);
+		this.addRenderableWidget(
 			CycleButton.builder(InfinitePlayerVisibilityConfigScreen::formatRemoteRenderDistanceMode, this.workingCopy.remoteRenderDistanceMode())
 				.withValues(InfinitePlayerVisibilityConfig.RemoteRenderDistanceMode.values())
+				.displayOnlyValue()
 				.withTooltip(mode -> Tooltip.create(formatRemoteRenderDistanceModeTooltip(mode)))
-				.create(leftX, y, OPTIONS_WIDTH, 20, Component.translatable("option.infinite_player_visibility.remote_render_distance_mode"), (button, value) -> {
+				.create(leftX + MODE_LABEL_WIDTH, y, MODE_BUTTON_WIDTH, 20, Component.translatable("option.infinite_player_visibility.remote_render_distance_mode"), (button, value) -> {
 					this.workingCopy.setRemoteRenderDistanceMode(value);
 				})
 		);

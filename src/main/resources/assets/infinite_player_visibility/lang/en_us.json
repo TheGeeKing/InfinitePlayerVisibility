@@ -6,7 +6,7 @@
 	"option.infinite_player_visibility.remote_entities": "Render distant entities",
 	"option.infinite_player_visibility.visibility_distance": "Visibility distance: %s",
 	"option.infinite_player_visibility.visibility_distance.value": "%s chunks (%s blocks)",
-	"option.infinite_player_visibility.remote_render_distance_mode": "Remote render mode",
+	"option.infinite_player_visibility.remote_render_distance_mode": "Render mode:",
 	"option.infinite_player_visibility.remote_render_distance_mode.terrain_context": "Terrain context (recommended)",
 	"option.infinite_player_visibility.remote_render_distance_mode.terrain_context.tooltip": "Caps remote rendering to loaded terrain range so players and entities do not appear in unloaded space.",
 	"option.infinite_player_visibility.remote_render_distance_mode.mod_distance": "Mod distance",

@@ -6,7 +6,7 @@
 	"option.infinite_player_visibility.remote_entities": "Afficher les entités lointaines",
 	"option.infinite_player_visibility.visibility_distance": "Distance de visibilité: %s",
 	"option.infinite_player_visibility.visibility_distance.value": "%s chunks (%s blocs)",
-	"option.infinite_player_visibility.remote_render_distance_mode": "Mode de rendu lointain",
+	"option.infinite_player_visibility.remote_render_distance_mode": "Mode de rendu :",
 	"option.infinite_player_visibility.remote_render_distance_mode.terrain_context": "Contexte terrain (recommandé)",
 	"option.infinite_player_visibility.remote_render_distance_mode.terrain_context.tooltip": "Limite le rendu lointain à la portée du terrain chargé pour éviter les joueurs et entités dans le vide.",
 	"option.infinite_player_visibility.remote_render_distance_mode.mod_distance": "Distance du mod",
