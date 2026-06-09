@@ -16,9 +16,25 @@ import java.util.Iterator;
 import java.util.Map;
 
 public final class VoxyCompat {
-	private static final boolean VOXY_LOADED = FabricLoader.getInstance().isModLoaded("voxy");
+	private static final String VOXY_MOD_ID = "voxy";
+	private static final int VISIBILITY_CACHE_MAX_ENTRIES = 256;
+	private static final String VOXY_RENDER_SYSTEM_CLASS = "me.cortex.voxy.client.core.VoxyRenderSystem";
+	private static final String VOXY_WORLD_ENGINE_CLASS = "me.cortex.voxy.common.world.WorldEngine";
+	private static final String VOXY_WORLD_SECTION_CLASS = "me.cortex.voxy.common.world.WorldSection";
+	private static final String VOXY_MAPPER_CLASS = "me.cortex.voxy.common.world.other.Mapper";
+	private static final String GET_ENGINE_METHOD = "getEngine";
+	private static final String GET_MAPPER_METHOD = "getMapper";
+	private static final String ACQUIRE_SECTION_METHOD = "acquireIfExists";
+	private static final String GET_BLOCK_OPACITY_METHOD = "getBlockStateOpacity";
+	private static final String GET_RAW_DATA_METHOD = "_unsafeGetRawDataArray";
+	private static final String RELEASE_SECTION_METHOD = "release";
+	private static final String GET_SECTION_INDEX_METHOD = "getIndex";
+	private static final String GET_RENDER_SYSTEM_METHOD = "voxy$getRenderSystem";
+	private static final String MAX_LOD_LAYER_FIELD = "MAX_LOD_LAYER";
+
+	private static final boolean VOXY_LOADED = FabricLoader.getInstance().isModLoaded(VOXY_MOD_ID);
 	private static final Reflection REFLECTION = VOXY_LOADED ? Reflection.create() : null;
-	private static final Map<Integer, CacheEntry> CACHE = new HashMap<>();
+	private static final Map<Integer, CacheEntry> VISIBILITY_CACHE = new HashMap<>();
 	private static final int MAX_SAMPLES = 256;
 	private static final double MIN_STEP = 2.0D;
 	private static final double MAX_STEP = 16.0D;
@@ -60,15 +76,24 @@ public final class VoxyCompat {
 		BlockPos entityBlockPos = entity.blockPosition();
 		long worldTime = client.level.getGameTime();
 
-		CacheEntry cached = CACHE.get(entity.getId());
-		if (cached != null && cached.matches(worldTime, cameraBlockPos, entityBlockPos)) {
-			return cached.visible();
+		Boolean cachedVisibility = getCachedVisibility(entity, worldTime, cameraBlockPos, entityBlockPos);
+		if (cachedVisibility != null) {
+			return cachedVisibility;
 		}
 
 		boolean visible = isVisibleWithVoxy(client.levelRenderer, cameraPos, entity);
-		CACHE.put(entity.getId(), new CacheEntry(worldTime, cameraBlockPos, entityBlockPos, visible));
-		pruneCache(worldTime);
+		cacheVisibility(entity, worldTime, cameraBlockPos, entityBlockPos, visible);
 		return visible;
+	}
+
+	private static Boolean getCachedVisibility(Entity entity, long worldTime, BlockPos cameraBlockPos, BlockPos entityBlockPos) {
+		CacheEntry cached = VISIBILITY_CACHE.get(entity.getId());
+		return cached != null && cached.matches(worldTime, cameraBlockPos, entityBlockPos) ? cached.visible() : null;
+	}
+
+	private static void cacheVisibility(Entity entity, long worldTime, BlockPos cameraBlockPos, BlockPos entityBlockPos, boolean visible) {
+		VISIBILITY_CACHE.put(entity.getId(), new CacheEntry(worldTime, cameraBlockPos, entityBlockPos, visible));
+		pruneCache(worldTime);
 	}
 
 	private static boolean usesVoxyOcclusion(Entity entity) {
@@ -135,11 +160,11 @@ public final class VoxyCompat {
 	}
 
 	private static void pruneCache(long worldTime) {
-		if (CACHE.size() <= 256) {
+		if (VISIBILITY_CACHE.size() <= VISIBILITY_CACHE_MAX_ENTRIES) {
 			return;
 		}
 
-		Iterator<Map.Entry<Integer, CacheEntry>> iterator = CACHE.entrySet().iterator();
+		Iterator<Map.Entry<Integer, CacheEntry>> iterator = VISIBILITY_CACHE.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Map.Entry<Integer, CacheEntry> entry = iterator.next();
 			if (worldTime - entry.getValue().worldTime() > 1L) {
@@ -201,20 +226,20 @@ public final class VoxyCompat {
 
 		private static Reflection create() {
 			try {
-				Class<?> renderSystemClass = Class.forName("me.cortex.voxy.client.core.VoxyRenderSystem");
-				Class<?> worldEngineClass = Class.forName("me.cortex.voxy.common.world.WorldEngine");
-				Class<?> worldSectionClass = Class.forName("me.cortex.voxy.common.world.WorldSection");
-				Class<?> mapperClass = Class.forName("me.cortex.voxy.common.world.other.Mapper");
+				Class<?> renderSystemClass = Class.forName(VOXY_RENDER_SYSTEM_CLASS);
+				Class<?> worldEngineClass = Class.forName(VOXY_WORLD_ENGINE_CLASS);
+				Class<?> worldSectionClass = Class.forName(VOXY_WORLD_SECTION_CLASS);
+				Class<?> mapperClass = Class.forName(VOXY_MAPPER_CLASS);
 
 				return new Reflection(
-						renderSystemClass.getMethod("getEngine"),
-						worldEngineClass.getMethod("getMapper"),
-						worldEngineClass.getMethod("acquireIfExists", int.class, int.class, int.class, int.class),
-						mapperClass.getMethod("getBlockStateOpacity", long.class),
-						worldSectionClass.getMethod("_unsafeGetRawDataArray"),
-						worldSectionClass.getMethod("release"),
-						worldSectionClass.getMethod("getIndex", int.class, int.class, int.class),
-						worldEngineClass.getField("MAX_LOD_LAYER").getInt(null)
+						renderSystemClass.getMethod(GET_ENGINE_METHOD),
+						worldEngineClass.getMethod(GET_MAPPER_METHOD),
+						worldEngineClass.getMethod(ACQUIRE_SECTION_METHOD, int.class, int.class, int.class, int.class),
+						mapperClass.getMethod(GET_BLOCK_OPACITY_METHOD, long.class),
+						worldSectionClass.getMethod(GET_RAW_DATA_METHOD),
+						worldSectionClass.getMethod(RELEASE_SECTION_METHOD),
+						worldSectionClass.getMethod(GET_SECTION_INDEX_METHOD, int.class, int.class, int.class),
+						worldEngineClass.getField(MAX_LOD_LAYER_FIELD).getInt(null)
 				);
 			} catch (ReflectiveOperationException exception) {
 				return null;
@@ -228,7 +253,7 @@ public final class VoxyCompat {
 		private Object getRenderSystem(LevelRenderer worldRenderer) {
 			try {
 				if (this.getRenderSystemMethod == null) {
-					this.getRenderSystemMethod = worldRenderer.getClass().getMethod("voxy$getRenderSystem");
+					this.getRenderSystemMethod = worldRenderer.getClass().getMethod(GET_RENDER_SYSTEM_METHOD);
 				}
 
 				return this.getRenderSystemMethod.invoke(worldRenderer);
