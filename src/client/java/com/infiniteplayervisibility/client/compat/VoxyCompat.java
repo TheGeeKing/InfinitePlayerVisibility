@@ -1,5 +1,18 @@
 package com.infiniteplayervisibility.client.compat;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.Set;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -10,15 +23,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.OptionalInt;
 
 public final class VoxyCompat {
 	private static final String VOXY_MOD_ID = "voxy";
 	private static final int VISIBILITY_CACHE_MAX_ENTRIES = 256;
+	private static final String[] VOXY_CONFIG_FILES = {"voxy.json", "voxy-client.json", "voxy/client.json"};
+	private static final Set<String> VOXY_RENDER_DISTANCE_KEYS = Set.of("renderDistance", "renderDistanceChunks", "viewDistance", "viewDistanceChunks");
 	private static final String VOXY_RENDER_SYSTEM_CLASS = "me.cortex.voxy.client.core.VoxyRenderSystem";
 	private static final String VOXY_WORLD_ENGINE_CLASS = "me.cortex.voxy.common.world.WorldEngine";
 	private static final String VOXY_WORLD_SECTION_CLASS = "me.cortex.voxy.common.world.WorldSection";
@@ -54,6 +64,18 @@ public final class VoxyCompat {
 	}
 
 	public static OptionalInt getConfiguredRenderDistanceBlocks() {
+		if (!VOXY_LOADED) {
+			return OptionalInt.empty();
+		}
+
+		Path configDir = FabricLoader.getInstance().getConfigDir();
+		for (String configFile : VOXY_CONFIG_FILES) {
+			OptionalInt renderDistanceChunks = readRenderDistanceChunks(configDir.resolve(configFile));
+			if (renderDistanceChunks.isPresent()) {
+				return OptionalInt.of(renderDistanceChunks.getAsInt() * 16);
+			}
+		}
+
 		return OptionalInt.empty();
 	}
 
@@ -103,6 +125,61 @@ public final class VoxyCompat {
 
 	private static boolean usesVoxyOcclusion(Entity entity) {
 		return entity instanceof Player || entity instanceof LivingEntity;
+	}
+
+	private static OptionalInt readRenderDistanceChunks(Path configPath) {
+		if (!Files.isRegularFile(configPath)) {
+			return OptionalInt.empty();
+		}
+
+		try (Reader reader = Files.newBufferedReader(configPath)) {
+			return findRenderDistanceChunks(JsonParser.parseReader(reader));
+		} catch (IOException | RuntimeException exception) {
+			return OptionalInt.empty();
+		}
+	}
+
+	private static OptionalInt findRenderDistanceChunks(JsonElement element) {
+		if (element == null || element.isJsonNull()) {
+			return OptionalInt.empty();
+		}
+
+		if (element.isJsonObject()) {
+			JsonObject object = element.getAsJsonObject();
+			for (String key : VOXY_RENDER_DISTANCE_KEYS) {
+				OptionalInt renderDistanceChunks = readPositiveInt(object.get(key));
+				if (renderDistanceChunks.isPresent()) {
+					return renderDistanceChunks;
+				}
+			}
+
+			for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+				OptionalInt renderDistanceChunks = findRenderDistanceChunks(entry.getValue());
+				if (renderDistanceChunks.isPresent()) {
+					return renderDistanceChunks;
+				}
+			}
+		}
+
+		if (element.isJsonArray()) {
+			for (JsonElement value : element.getAsJsonArray()) {
+				OptionalInt renderDistanceChunks = findRenderDistanceChunks(value);
+				if (renderDistanceChunks.isPresent()) {
+					return renderDistanceChunks;
+				}
+			}
+		}
+
+		return OptionalInt.empty();
+	}
+
+	private static OptionalInt readPositiveInt(JsonElement element) {
+		if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isNumber()) {
+			return OptionalInt.empty();
+		}
+
+		int value = element.getAsInt();
+		return value > 0 ? OptionalInt.of(value) : OptionalInt.empty();
 	}
 
 	private static boolean isVisibleWithVoxy(LevelRenderer worldRenderer, Vec3 cameraPos, Entity entity) {
