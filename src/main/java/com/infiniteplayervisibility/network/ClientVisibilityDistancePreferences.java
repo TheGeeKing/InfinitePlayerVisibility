@@ -1,7 +1,7 @@
 package com.infiniteplayervisibility.network;
 
-import com.infiniteplayervisibility.EntityVisibilityRules;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
+import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,10 +9,6 @@ import org.jspecify.annotations.Nullable;
 
 public final class ClientVisibilityDistancePreferences {
 	private static final Object2IntOpenHashMap<UUID> VISIBILITY_DISTANCE_BLOCKS_BY_PLAYER = new Object2IntOpenHashMap<>();
-
-	static {
-		VISIBILITY_DISTANCE_BLOCKS_BY_PLAYER.defaultReturnValue(EntityVisibilityRules.INFINITE_TRACKING_DISTANCE_BLOCKS);
-	}
 
 	private ClientVisibilityDistancePreferences() {
 	}
@@ -26,10 +22,14 @@ public final class ClientVisibilityDistancePreferences {
 	}
 
 	public static int get(@Nullable ServerPlayer player) {
+		int serverMaximumDistanceBlocks = InfinitePlayerVisibilityConfigManager.getConfig().visibilityDistanceBlocks();
 		if (player == null) {
-			return EntityVisibilityRules.INFINITE_TRACKING_DISTANCE_BLOCKS;
+			return serverMaximumDistanceBlocks;
 		}
 
-		return VISIBILITY_DISTANCE_BLOCKS_BY_PLAYER.getInt(player.getUUID());
+		int clientDistanceBlocks = VISIBILITY_DISTANCE_BLOCKS_BY_PLAYER.containsKey(player.getUUID())
+			? VISIBILITY_DISTANCE_BLOCKS_BY_PLAYER.getInt(player.getUUID())
+			: serverMaximumDistanceBlocks;
+		return Math.min(serverMaximumDistanceBlocks, clientDistanceBlocks);
 	}
 }
