@@ -49,9 +49,19 @@ dependencies {
 
 processResources {
 	inputs.property "version", project.version
+	inputs.property "compatibleMinecraftVersions", project.compatible_minecraft_versions
+	inputs.property "compatibleLoaderVersions", project.compatible_loader_versions
+	inputs.property "compatibleFabricApiVersions", project.compatible_fabric_api_versions
+	inputs.property "compatibleModmenuVersions", project.compatible_modmenu_versions
 
 	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
+		expand(
+			"version": inputs.properties.version,
+			"compatibleMinecraftVersions": inputs.properties.compatibleMinecraftVersions,
+			"compatibleLoaderVersions": inputs.properties.compatibleLoaderVersions,
+			"compatibleFabricApiVersions": inputs.properties.compatibleFabricApiVersions,
+			"compatibleModmenuVersions": inputs.properties.compatibleModmenuVersions
+		)
 	}
 }
 

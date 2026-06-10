@@ -1,6 +1,6 @@
 # Infinite Player Visibility
 
-Fabric mod for Minecraft 1.21.11 that keeps players visible at very long distances without loading their chunks.
+Fabric mod for Minecraft 26.1.x that keeps players visible at very long distances without loading their chunks.
 
 As of 1.2.0, ticking entities can be rendered too.
 
@@ -43,6 +43,8 @@ When an anchor starts or updates forced chunk loading, the server log includes t
 ## Installation
 
 Install the same JAR on both the server and the clients. The server side handles network tracking, and the client side removes rendering limits.
+
+The published mod metadata accepts Minecraft `>=26.1 <26.2`, Fabric Loader `>=0.19.1`, Fabric API `>=0.145.1`, and Mod Menu `>=18.0.0-alpha.8` when present.
 
 ## Build
 
