@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,7 +13,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.OptionalInt;
-import java.util.Set;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -27,8 +27,12 @@ import net.minecraft.world.phys.Vec3;
 public final class VoxyCompat {
 	private static final String VOXY_MOD_ID = "voxy";
 	private static final int VISIBILITY_CACHE_MAX_ENTRIES = 256;
-	private static final String[] VOXY_CONFIG_FILES = {"voxy.json", "voxy-client.json", "voxy/client.json"};
-	private static final Set<String> VOXY_RENDER_DISTANCE_KEYS = Set.of("renderDistance", "renderDistanceChunks", "viewDistance", "viewDistanceChunks");
+	private static final String VOXY_CONFIG_CLASS = "me.cortex.voxy.client.config.VoxyConfig";
+	private static final String VOXY_CONFIG_FILE = "voxy-config.json";
+	private static final String VOXY_CONFIG_INSTANCE_FIELD = "CONFIG";
+	private static final String VOXY_SECTION_RENDER_DISTANCE_FIELD = "sectionRenderDistance";
+	private static final String VOXY_SECTION_RENDER_DISTANCE_KEY = "section_render_distance";
+	private static final int VOXY_CHUNKS_PER_SECTION_DISTANCE = 32;
 	private static final String VOXY_RENDER_SYSTEM_CLASS = "me.cortex.voxy.client.core.VoxyRenderSystem";
 	private static final String VOXY_WORLD_ENGINE_CLASS = "me.cortex.voxy.common.world.WorldEngine";
 	private static final String VOXY_WORLD_SECTION_CLASS = "me.cortex.voxy.common.world.WorldSection";
@@ -68,15 +72,13 @@ public final class VoxyCompat {
 			return OptionalInt.empty();
 		}
 
-		Path configDir = FabricLoader.getInstance().getConfigDir();
-		for (String configFile : VOXY_CONFIG_FILES) {
-			OptionalInt renderDistanceChunks = readRenderDistanceChunks(configDir.resolve(configFile));
-			if (renderDistanceChunks.isPresent()) {
-				return OptionalInt.of(renderDistanceChunks.getAsInt() * 16);
-			}
+		OptionalInt liveConfigDistance = getLiveConfiguredRenderDistanceBlocks();
+		if (liveConfigDistance.isPresent()) {
+			return liveConfigDistance;
 		}
 
-		return OptionalInt.empty();
+		Path configPath = FabricLoader.getInstance().getConfigDir().resolve(VOXY_CONFIG_FILE);
+		return readConfiguredRenderDistanceBlocks(configPath);
 	}
 
 	public static boolean shouldRenderEntity(Entity entity) {
@@ -127,59 +129,54 @@ public final class VoxyCompat {
 		return entity instanceof Player || entity instanceof LivingEntity;
 	}
 
-	private static OptionalInt readRenderDistanceChunks(Path configPath) {
+	private static OptionalInt getLiveConfiguredRenderDistanceBlocks() {
+		try {
+			Class<?> configClass = Class.forName(VOXY_CONFIG_CLASS);
+			Field configField = configClass.getField(VOXY_CONFIG_INSTANCE_FIELD);
+			Object config = configField.get(null);
+			if (config == null) {
+				return OptionalInt.empty();
+			}
+
+			return sectionRenderDistanceToBlocks(configClass.getField(VOXY_SECTION_RENDER_DISTANCE_FIELD).getFloat(config));
+		} catch (ReflectiveOperationException | RuntimeException exception) {
+			return OptionalInt.empty();
+		}
+	}
+
+	private static OptionalInt readConfiguredRenderDistanceBlocks(Path configPath) {
 		if (!Files.isRegularFile(configPath)) {
 			return OptionalInt.empty();
 		}
 
 		try (Reader reader = Files.newBufferedReader(configPath)) {
-			return findRenderDistanceChunks(JsonParser.parseReader(reader));
+			JsonElement element = JsonParser.parseReader(reader);
+			if (!element.isJsonObject()) {
+				return OptionalInt.empty();
+			}
+
+			JsonObject object = element.getAsJsonObject();
+			return readSectionRenderDistanceBlocks(object.get(VOXY_SECTION_RENDER_DISTANCE_KEY));
 		} catch (IOException | RuntimeException exception) {
 			return OptionalInt.empty();
 		}
 	}
 
-	private static OptionalInt findRenderDistanceChunks(JsonElement element) {
-		if (element == null || element.isJsonNull()) {
-			return OptionalInt.empty();
-		}
-
-		if (element.isJsonObject()) {
-			JsonObject object = element.getAsJsonObject();
-			for (String key : VOXY_RENDER_DISTANCE_KEYS) {
-				OptionalInt renderDistanceChunks = readPositiveInt(object.get(key));
-				if (renderDistanceChunks.isPresent()) {
-					return renderDistanceChunks;
-				}
-			}
-
-			for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
-				OptionalInt renderDistanceChunks = findRenderDistanceChunks(entry.getValue());
-				if (renderDistanceChunks.isPresent()) {
-					return renderDistanceChunks;
-				}
-			}
-		}
-
-		if (element.isJsonArray()) {
-			for (JsonElement value : element.getAsJsonArray()) {
-				OptionalInt renderDistanceChunks = findRenderDistanceChunks(value);
-				if (renderDistanceChunks.isPresent()) {
-					return renderDistanceChunks;
-				}
-			}
-		}
-
-		return OptionalInt.empty();
-	}
-
-	private static OptionalInt readPositiveInt(JsonElement element) {
+	private static OptionalInt readSectionRenderDistanceBlocks(JsonElement element) {
 		if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isNumber()) {
 			return OptionalInt.empty();
 		}
 
-		int value = element.getAsInt();
-		return value > 0 ? OptionalInt.of(value) : OptionalInt.empty();
+		return sectionRenderDistanceToBlocks(element.getAsDouble());
+	}
+
+	private static OptionalInt sectionRenderDistanceToBlocks(double sectionRenderDistance) {
+		if (!Double.isFinite(sectionRenderDistance) || sectionRenderDistance <= 0.0D) {
+			return OptionalInt.empty();
+		}
+
+		int chunks = (int)Math.round(sectionRenderDistance * VOXY_CHUNKS_PER_SECTION_DISTANCE);
+		return OptionalInt.of(chunks * 16);
 	}
 
 	private static boolean isVisibleWithVoxy(LevelRenderer worldRenderer, Vec3 cameraPos, Entity entity) {
