@@ -4,6 +4,7 @@ import com.infiniteplayervisibility.EntityVisibilityRules;
 import com.infiniteplayervisibility.InfinitePlayerVisibilityMod;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
+import com.infiniteplayervisibility.network.ClientVisibilityDistancePreferences;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
@@ -57,7 +58,9 @@ abstract class ServerChunkLoadingManagerMixin {
 			}
 
 			for (ServerPlayer player : this.level.players()) {
-				tracker.infinitePlayerVisibility$updateTrackedStatus(player);
+				if (isWithinClientTrackingDistance(entity, player)) {
+					tracker.infinitePlayerVisibility$updateTrackedStatus(player);
+				}
 			}
 			refreshedEntities++;
 		}
@@ -67,5 +70,18 @@ abstract class ServerChunkLoadingManagerMixin {
 		return config.enabled()
 			&& (config.renderRemotePlayers() || config.renderRemoteEntities())
 			&& !this.level.players().isEmpty();
+	}
+
+	private static boolean isWithinClientTrackingDistance(Entity entity, ServerPlayer player) {
+		int distanceBlocks = Math.min(
+			EntityVisibilityRules.getConfiguredTrackingDistanceBlocks(entity),
+			ClientVisibilityDistancePreferences.get(player)
+		);
+		if (distanceBlocks >= EntityVisibilityRules.INFINITE_TRACKING_DISTANCE_BLOCKS) {
+			return true;
+		}
+
+		double maxDistance = distanceBlocks;
+		return entity.distanceToSqr(player) <= maxDistance * maxDistance;
 	}
 }
