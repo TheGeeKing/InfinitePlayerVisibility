@@ -22,9 +22,16 @@ abstract class ServerChunkLoadingManagerEntityTrackerMixin {
 		at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I")
 	)
 	private int infinitePlayerVisibility$removeDistanceCap(int trackedDistance, int watchedDistance, ServerPlayer player) {
-		return EntityVisibilityRules.shouldForceServerTracking(this.entity)
-			? Math.min(EntityVisibilityRules.getConfiguredTrackingDistanceBlocks(this.entity), ClientVisibilityDistancePreferences.get(player))
-			: Math.min(trackedDistance, watchedDistance);
+		int refreshDistanceBlocks = ForcedTrackingRefreshContext.getTrackingDistanceBlocks(this.entity, player);
+		if (refreshDistanceBlocks >= 0) {
+			return refreshDistanceBlocks;
+		}
+
+		if (!EntityVisibilityRules.shouldForceServerTracking(this.entity)) {
+			return Math.min(trackedDistance, watchedDistance);
+		}
+
+		return Math.min(EntityVisibilityRules.getConfiguredTrackingDistanceBlocks(this.entity), ClientVisibilityDistancePreferences.get(player));
 	}
 
 	@Redirect(
@@ -40,6 +47,10 @@ abstract class ServerChunkLoadingManagerEntityTrackerMixin {
 		int chunkX,
 		int chunkZ
 	) {
+		if (ForcedTrackingRefreshContext.isRefreshing(this.entity)) {
+			return true;
+		}
+
 		return EntityVisibilityRules.shouldForceServerTracking(this.entity) || manager.isChunkTracked(player, chunkX, chunkZ);
 	}
 }

@@ -6,6 +6,8 @@ import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
 import com.infiniteplayervisibility.network.ClientVisibilityDistancePreferences;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import java.util.List;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,6 +40,9 @@ abstract class ServerChunkLoadingManagerMixin {
 			return;
 		}
 
+		List<ServerPlayer> players = this.level.players();
+		Reference2IntOpenHashMap<ServerPlayer> clientTrackingDistanceBlocksByPlayer = getClientTrackingDistanceBlocksByPlayer(players);
+		int configuredTrackingDistanceBlocks = config.visibilityDistanceBlocks();
 		int refreshedEntities = 0;
 		int maxRefreshedEntities = config.maxTrackedEntitiesPerRefresh();
 		for (Object trackerObject : this.entityMap.values()) {
@@ -57,10 +62,15 @@ abstract class ServerChunkLoadingManagerMixin {
 				continue;
 			}
 
-			for (ServerPlayer player : this.level.players()) {
-				if (isWithinClientTrackingDistance(entity, player)) {
-					tracker.infinitePlayerVisibility$updateTrackedStatus(player);
+			try {
+				ForcedTrackingRefreshContext.set(entity, configuredTrackingDistanceBlocks, clientTrackingDistanceBlocksByPlayer);
+				for (ServerPlayer player : players) {
+					if (isWithinClientTrackingDistance(entity, player, configuredTrackingDistanceBlocks, clientTrackingDistanceBlocksByPlayer)) {
+						tracker.infinitePlayerVisibility$updateTrackedStatus(player);
+					}
 				}
+			} finally {
+				ForcedTrackingRefreshContext.clear();
 			}
 			refreshedEntities++;
 		}
@@ -72,10 +82,23 @@ abstract class ServerChunkLoadingManagerMixin {
 			&& !this.level.players().isEmpty();
 	}
 
-	private static boolean isWithinClientTrackingDistance(Entity entity, ServerPlayer player) {
+	private static Reference2IntOpenHashMap<ServerPlayer> getClientTrackingDistanceBlocksByPlayer(List<ServerPlayer> players) {
+		Reference2IntOpenHashMap<ServerPlayer> clientTrackingDistanceBlocksByPlayer = new Reference2IntOpenHashMap<>(players.size());
+		for (ServerPlayer player : players) {
+			clientTrackingDistanceBlocksByPlayer.put(player, ClientVisibilityDistancePreferences.get(player));
+		}
+		return clientTrackingDistanceBlocksByPlayer;
+	}
+
+	private static boolean isWithinClientTrackingDistance(
+		Entity entity,
+		ServerPlayer player,
+		int configuredTrackingDistanceBlocks,
+		Reference2IntOpenHashMap<ServerPlayer> clientTrackingDistanceBlocksByPlayer
+	) {
 		int distanceBlocks = Math.min(
-			EntityVisibilityRules.getConfiguredTrackingDistanceBlocks(entity),
-			ClientVisibilityDistancePreferences.get(player)
+			configuredTrackingDistanceBlocks,
+			clientTrackingDistanceBlocksByPlayer.getInt(player)
 		);
 		if (distanceBlocks >= EntityVisibilityRules.INFINITE_TRACKING_DISTANCE_BLOCKS) {
 			return true;
