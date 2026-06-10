@@ -4,6 +4,8 @@ import com.infiniteplayervisibility.EntityVisibilityRules;
 import com.infiniteplayervisibility.InfinitePlayerVisibilityMod;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfig;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
+import com.infiniteplayervisibility.tracking.ForcedTrackingPlayerDistances;
+import com.infiniteplayervisibility.tracking.ForcedTrackingRefreshContext;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.List;
 import net.minecraft.server.level.ChunkMap;

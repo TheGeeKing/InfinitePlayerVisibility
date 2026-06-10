@@ -2,6 +2,7 @@ package com.infiniteplayervisibility.mixin.server;
 
 import com.infiniteplayervisibility.EntityVisibilityRules;
 import com.infiniteplayervisibility.network.ClientVisibilityDistancePreferences;
+import com.infiniteplayervisibility.tracking.ForcedTrackingRefreshContext;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;

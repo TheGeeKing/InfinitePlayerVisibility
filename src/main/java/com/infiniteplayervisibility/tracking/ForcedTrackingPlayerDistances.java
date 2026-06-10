@@ -1,4 +1,4 @@
-package com.infiniteplayervisibility.mixin.server;
+package com.infiniteplayervisibility.tracking;
 
 import com.infiniteplayervisibility.EntityVisibilityRules;
 import com.infiniteplayervisibility.network.ClientVisibilityDistancePreferences;
@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import java.util.List;
 import net.minecraft.server.level.ServerPlayer;
 
-final class ForcedTrackingPlayerDistances {
+public final class ForcedTrackingPlayerDistances {
 	private final Reference2IntOpenHashMap<ServerPlayer> distanceBlocksByPlayer;
 	private final Reference2LongOpenHashMap<ServerPlayer> distanceBlocksSquaredByPlayer;
 
@@ -16,7 +16,7 @@ final class ForcedTrackingPlayerDistances {
 		this.distanceBlocksSquaredByPlayer = new Reference2LongOpenHashMap<>(playerCount);
 	}
 
-	static ForcedTrackingPlayerDistances create(List<ServerPlayer> players, int serverMaximumDistanceBlocks) {
+	public static ForcedTrackingPlayerDistances create(List<ServerPlayer> players, int serverMaximumDistanceBlocks) {
 		ForcedTrackingPlayerDistances distances = new ForcedTrackingPlayerDistances(players.size());
 		for (ServerPlayer player : players) {
 			int distanceBlocks = ClientVisibilityDistancePreferences.get(player, serverMaximumDistanceBlocks);
@@ -26,11 +26,11 @@ final class ForcedTrackingPlayerDistances {
 		return distances;
 	}
 
-	int getDistanceBlocks(ServerPlayer player) {
+	public int getDistanceBlocks(ServerPlayer player) {
 		return this.distanceBlocksByPlayer.getInt(player);
 	}
 
-	long getDistanceBlocksSquared(ServerPlayer player) {
+	public long getDistanceBlocksSquared(ServerPlayer player) {
 		return this.distanceBlocksSquaredByPlayer.getLong(player);
 	}
 

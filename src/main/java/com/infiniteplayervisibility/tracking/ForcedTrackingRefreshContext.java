@@ -1,9 +1,9 @@
-package com.infiniteplayervisibility.mixin.server;
+package com.infiniteplayervisibility.tracking;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
-final class ForcedTrackingRefreshContext {
+public final class ForcedTrackingRefreshContext {
 	private static final ThreadLocal<ForcedTrackingRefreshContext> CURRENT = new ThreadLocal<>();
 
 	private final Entity entity;
@@ -17,23 +17,23 @@ final class ForcedTrackingRefreshContext {
 		this.playerDistances = playerDistances;
 	}
 
-	static void set(
+	public static void set(
 		Entity entity,
 		ForcedTrackingPlayerDistances playerDistances
 	) {
 		CURRENT.set(new ForcedTrackingRefreshContext(entity, playerDistances));
 	}
 
-	static void clear() {
+	public static void clear() {
 		CURRENT.remove();
 	}
 
-	static boolean isRefreshing(Entity entity) {
+	public static boolean isRefreshing(Entity entity) {
 		ForcedTrackingRefreshContext context = CURRENT.get();
 		return context != null && context.entity == entity;
 	}
 
-	static int getTrackingDistanceBlocks(Entity entity, ServerPlayer player) {
+	public static int getTrackingDistanceBlocks(Entity entity, ServerPlayer player) {
 		ForcedTrackingRefreshContext context = CURRENT.get();
 		if (context == null || context.entity != entity) {
 			return -1;
