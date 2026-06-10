@@ -23,6 +23,10 @@ public final class ClientVisibilityDistancePreferences {
 
 	public static int get(@Nullable ServerPlayer player) {
 		int serverMaximumDistanceBlocks = InfinitePlayerVisibilityConfigManager.getConfig().visibilityDistanceBlocks();
+		return get(player, serverMaximumDistanceBlocks);
+	}
+
+	public static int get(@Nullable ServerPlayer player, int serverMaximumDistanceBlocks) {
 		if (player == null) {
 			return serverMaximumDistanceBlocks;
 		}

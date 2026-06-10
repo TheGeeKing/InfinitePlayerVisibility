@@ -1,6 +1,5 @@
 package com.infiniteplayervisibility.mixin.server;
 
-import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
@@ -8,25 +7,21 @@ final class ForcedTrackingRefreshContext {
 	private static final ThreadLocal<ForcedTrackingRefreshContext> CURRENT = new ThreadLocal<>();
 
 	private final Entity entity;
-	private final int configuredTrackingDistanceBlocks;
-	private final Reference2IntMap<ServerPlayer> clientTrackingDistanceBlocksByPlayer;
+	private final ForcedTrackingPlayerDistances playerDistances;
 
 	private ForcedTrackingRefreshContext(
 		Entity entity,
-		int configuredTrackingDistanceBlocks,
-		Reference2IntMap<ServerPlayer> clientTrackingDistanceBlocksByPlayer
+		ForcedTrackingPlayerDistances playerDistances
 	) {
 		this.entity = entity;
-		this.configuredTrackingDistanceBlocks = configuredTrackingDistanceBlocks;
-		this.clientTrackingDistanceBlocksByPlayer = clientTrackingDistanceBlocksByPlayer;
+		this.playerDistances = playerDistances;
 	}
 
 	static void set(
 		Entity entity,
-		int configuredTrackingDistanceBlocks,
-		Reference2IntMap<ServerPlayer> clientTrackingDistanceBlocksByPlayer
+		ForcedTrackingPlayerDistances playerDistances
 	) {
-		CURRENT.set(new ForcedTrackingRefreshContext(entity, configuredTrackingDistanceBlocks, clientTrackingDistanceBlocksByPlayer));
+		CURRENT.set(new ForcedTrackingRefreshContext(entity, playerDistances));
 	}
 
 	static void clear() {
@@ -44,9 +39,6 @@ final class ForcedTrackingRefreshContext {
 			return -1;
 		}
 
-		return Math.min(
-			context.configuredTrackingDistanceBlocks,
-			context.clientTrackingDistanceBlocksByPlayer.getInt(player)
-		);
+		return context.playerDistances.getDistanceBlocks(player);
 	}
 }
