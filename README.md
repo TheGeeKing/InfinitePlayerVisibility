@@ -21,9 +21,62 @@ The mod can refresh remote entity tracking every few ticks so clients keep recei
 - `visibilityDistanceBlocks`: maximum render/tracking distance. Values are clamped to Voxy-style distances from 20 to 2,048 chunks: 6-chunk steps below 100 chunks, then 8-chunk steps up to 2,048 chunks.
 - `remoteRenderDistanceMode`: controls how the client caps remote rendering. `TERRAIN_CONTEXT` keeps remote entities within the client's terrain context; `MOD_DISTANCE` uses only the mod distance.
 - `remoteEntityTrackingIntervalTicks`: how often the server refreshes forced trackers. The default is `4`, matching the original behavior.
-- `maxTrackedEntitiesPerRefresh`: optional cap for refreshed forced entities per refresh. Use `0` for no cap.
+- `maxTrackedRemotePlayersPerRefresh`: optional cap for refreshed remote player entities per refresh. The default is `0`, meaning no player cap.
+- `maxTrackedRemoteEntitiesPerRefresh`: optional cap for refreshed remote non-player entities per refresh. This includes mobs and items that are still ticking server-side. The default is `128`; use `0` for no absolute cap.
+- `remoteEntitiesPerPlayerRefreshRatio`: optional scaling cap for refreshed remote non-player entities. The cap is `online players * remoteEntitiesPerPlayerRefreshRatio`. The default is `16`; use `0` to disable ratio scaling.
 
 Clients report their effective render cap to the server. The server then uses the lower of its own config and each client's cap, so a client rendering 32 chunks is not force-sent entities out to 64 chunks.
+
+### Refresh cap examples
+
+All caps apply once per `remoteEntityTrackingIntervalTicks` refresh. The player cap and non-player entity cap are counted independently.
+
+Default cap behavior keeps remote players uncapped and allows remote mobs/items up to the stricter of `128` total or `16 * online players`. For example, with 4 online players the non-player cap is `min(128, 4 * 16) = 64`; with 12 online players it is `min(128, 12 * 16) = 128`.
+
+Unlimited remote players, up to 100 remote mobs/items per refresh:
+
+```json
+{
+  "renderRemotePlayers": true,
+  "renderRemoteEntities": true,
+  "maxTrackedRemotePlayersPerRefresh": 0,
+  "maxTrackedRemoteEntitiesPerRefresh": 100,
+  "remoteEntitiesPerPlayerRefreshRatio": 0
+}
+```
+
+Up to 10 remote mobs/items per online player:
+
+```json
+{
+  "renderRemotePlayers": true,
+  "renderRemoteEntities": true,
+  "maxTrackedRemotePlayersPerRefresh": 0,
+  "maxTrackedRemoteEntitiesPerRefresh": 0,
+  "remoteEntitiesPerPlayerRefreshRatio": 10
+}
+```
+
+Use both an absolute cap and a ratio cap together to keep the stricter limit. With 8 online players, this example allows `min(150, 8 * 12) = 96` remote mobs/items per refresh:
+
+```json
+{
+  "renderRemotePlayers": true,
+  "renderRemoteEntities": true,
+  "maxTrackedRemotePlayersPerRefresh": 0,
+  "maxTrackedRemoteEntitiesPerRefresh": 150,
+  "remoteEntitiesPerPlayerRefreshRatio": 12
+}
+```
+
+Disable remote mob/item tracking while keeping distant players visible:
+
+```json
+{
+  "renderRemotePlayers": true,
+  "renderRemoteEntities": false
+}
+```
 
 ## Solo Visibility Anchor
 

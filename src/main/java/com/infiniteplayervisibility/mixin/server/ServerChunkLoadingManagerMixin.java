@@ -42,22 +42,32 @@ abstract class ServerChunkLoadingManagerMixin {
 		List<ServerPlayer> players = this.level.players();
 		int configuredTrackingDistanceBlocks = config.visibilityDistanceBlocks();
 		ForcedTrackingPlayerDistances playerDistances = ForcedTrackingPlayerDistances.create(players, configuredTrackingDistanceBlocks);
+		int refreshedPlayers = 0;
 		int refreshedEntities = 0;
-		int maxRefreshedEntities = config.maxTrackedEntitiesPerRefresh();
+		int maxRefreshedPlayers = config.maxTrackedRemotePlayersPerRefresh();
+		int maxRefreshedEntities = InfinitePlayerVisibilityConfig.resolveRemoteEntityRefreshCap(
+			players.size(),
+			config.maxTrackedRemoteEntitiesPerRefresh(),
+			config.remoteEntitiesPerPlayerRefreshRatio()
+		);
+		boolean loggedPlayerCap = false;
+		boolean loggedEntityCap = false;
 		for (Object trackerObject : this.entityMap.values()) {
-			if (maxRefreshedEntities > InfinitePlayerVisibilityConfig.UNLIMITED_TRACKED_ENTITIES_PER_REFRESH
-				&& refreshedEntities >= maxRefreshedEntities) {
-				InfinitePlayerVisibilityMod.LOGGER.debug(
-					"Skipped forced tracker refreshes in dimension {} after reaching configured cap of {} entities.",
-					this.level.dimension(),
-					maxRefreshedEntities
-				);
-				return;
-			}
-
 			ServerChunkLoadingManagerEntityTrackerAccessor tracker = (ServerChunkLoadingManagerEntityTrackerAccessor)trackerObject;
 			Entity entity = tracker.infinitePlayerVisibility$getEntity();
 			if (!shouldForceServerTracking(entity, config)) {
+				continue;
+			}
+
+			boolean playerEntity = entity instanceof Player;
+			if (reachedRefreshCap(playerEntity, refreshedPlayers, refreshedEntities, maxRefreshedPlayers, maxRefreshedEntities)) {
+				if (playerEntity && !loggedPlayerCap) {
+					logRefreshCap(true, maxRefreshedPlayers);
+					loggedPlayerCap = true;
+				} else if (!playerEntity && !loggedEntityCap) {
+					logRefreshCap(false, maxRefreshedEntities);
+					loggedEntityCap = true;
+				}
 				continue;
 			}
 
@@ -71,7 +81,11 @@ abstract class ServerChunkLoadingManagerMixin {
 			} finally {
 				ForcedTrackingRefreshContext.clear();
 			}
-			refreshedEntities++;
+			if (playerEntity) {
+				refreshedPlayers++;
+			} else {
+				refreshedEntities++;
+			}
 		}
 	}
 
@@ -104,5 +118,32 @@ abstract class ServerChunkLoadingManagerMixin {
 		}
 
 		return entity.distanceToSqr(player) <= playerDistances.getDistanceBlocksSquared(player);
+	}
+
+	private static boolean reachedRefreshCap(
+		boolean playerEntity,
+		int refreshedPlayers,
+		int refreshedEntities,
+		int maxRefreshedPlayers,
+		int maxRefreshedEntities
+	) {
+		if (playerEntity) {
+			return isLimited(maxRefreshedPlayers) && refreshedPlayers >= maxRefreshedPlayers;
+		}
+
+		return isLimited(maxRefreshedEntities) && refreshedEntities >= maxRefreshedEntities;
+	}
+
+	private void logRefreshCap(boolean playerEntity, int cap) {
+		InfinitePlayerVisibilityMod.LOGGER.debug(
+			"Skipped forced tracker refreshes in dimension {} after reaching configured cap of {} {}.",
+			this.level.dimension(),
+			cap,
+			playerEntity ? "players" : "entities"
+		);
+	}
+
+	private static boolean isLimited(int cap) {
+		return cap > InfinitePlayerVisibilityConfig.UNLIMITED_TRACKED_ENTITIES_PER_REFRESH;
 	}
 }

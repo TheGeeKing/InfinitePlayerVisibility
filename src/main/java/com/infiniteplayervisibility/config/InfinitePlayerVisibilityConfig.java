@@ -13,6 +13,8 @@ public final class InfinitePlayerVisibilityConfig {
 	public static final int DEFAULT_REMOTE_ENTITY_TRACKING_INTERVAL_TICKS = 4;
 	public static final int UNLIMITED_TRACKED_ENTITIES_PER_REFRESH = 0;
 	public static final int MAX_TRACKED_ENTITIES_PER_REFRESH = 1000000;
+	public static final int DEFAULT_MAX_TRACKED_REMOTE_ENTITIES_PER_REFRESH = 128;
+	public static final int DEFAULT_REMOTE_ENTITIES_PER_PLAYER_REFRESH_RATIO = 16;
 
 	public enum RemoteRenderDistanceMode {
 		MOD_DISTANCE,
@@ -25,7 +27,9 @@ public final class InfinitePlayerVisibilityConfig {
 	private int visibilityDistanceBlocks = MAX_VISIBILITY_DISTANCE_BLOCKS;
 	private RemoteRenderDistanceMode remoteRenderDistanceMode = RemoteRenderDistanceMode.TERRAIN_CONTEXT;
 	private int remoteEntityTrackingIntervalTicks = DEFAULT_REMOTE_ENTITY_TRACKING_INTERVAL_TICKS;
-	private int maxTrackedEntitiesPerRefresh = UNLIMITED_TRACKED_ENTITIES_PER_REFRESH;
+	private int maxTrackedRemotePlayersPerRefresh = UNLIMITED_TRACKED_ENTITIES_PER_REFRESH;
+	private int maxTrackedRemoteEntitiesPerRefresh = DEFAULT_MAX_TRACKED_REMOTE_ENTITIES_PER_REFRESH;
+	private int remoteEntitiesPerPlayerRefreshRatio = DEFAULT_REMOTE_ENTITIES_PER_PLAYER_REFRESH_RATIO;
 
 	public boolean enabled() {
 		return this.enabled;
@@ -75,12 +79,28 @@ public final class InfinitePlayerVisibilityConfig {
 		this.remoteEntityTrackingIntervalTicks = clampRemoteEntityTrackingIntervalTicks(remoteEntityTrackingIntervalTicks);
 	}
 
-	public int maxTrackedEntitiesPerRefresh() {
-		return clampMaxTrackedEntitiesPerRefresh(this.maxTrackedEntitiesPerRefresh);
+	public int maxTrackedRemotePlayersPerRefresh() {
+		return clampMaxTrackedEntitiesPerRefresh(this.maxTrackedRemotePlayersPerRefresh);
 	}
 
-	public void setMaxTrackedEntitiesPerRefresh(int maxTrackedEntitiesPerRefresh) {
-		this.maxTrackedEntitiesPerRefresh = clampMaxTrackedEntitiesPerRefresh(maxTrackedEntitiesPerRefresh);
+	public void setMaxTrackedRemotePlayersPerRefresh(int maxTrackedRemotePlayersPerRefresh) {
+		this.maxTrackedRemotePlayersPerRefresh = clampMaxTrackedEntitiesPerRefresh(maxTrackedRemotePlayersPerRefresh);
+	}
+
+	public int maxTrackedRemoteEntitiesPerRefresh() {
+		return clampMaxTrackedEntitiesPerRefresh(this.maxTrackedRemoteEntitiesPerRefresh);
+	}
+
+	public void setMaxTrackedRemoteEntitiesPerRefresh(int maxTrackedRemoteEntitiesPerRefresh) {
+		this.maxTrackedRemoteEntitiesPerRefresh = clampMaxTrackedEntitiesPerRefresh(maxTrackedRemoteEntitiesPerRefresh);
+	}
+
+	public int remoteEntitiesPerPlayerRefreshRatio() {
+		return clampMaxTrackedEntitiesPerRefresh(this.remoteEntitiesPerPlayerRefreshRatio);
+	}
+
+	public void setRemoteEntitiesPerPlayerRefreshRatio(int remoteEntitiesPerPlayerRefreshRatio) {
+		this.remoteEntitiesPerPlayerRefreshRatio = clampMaxTrackedEntitiesPerRefresh(remoteEntitiesPerPlayerRefreshRatio);
 	}
 
 	public InfinitePlayerVisibilityConfig copy() {
@@ -91,7 +111,9 @@ public final class InfinitePlayerVisibilityConfig {
 		copy.visibilityDistanceBlocks = this.visibilityDistanceBlocks();
 		copy.remoteRenderDistanceMode = this.remoteRenderDistanceMode();
 		copy.remoteEntityTrackingIntervalTicks = this.remoteEntityTrackingIntervalTicks();
-		copy.maxTrackedEntitiesPerRefresh = this.maxTrackedEntitiesPerRefresh();
+		copy.maxTrackedRemotePlayersPerRefresh = this.maxTrackedRemotePlayersPerRefresh();
+		copy.maxTrackedRemoteEntitiesPerRefresh = this.maxTrackedRemoteEntitiesPerRefresh();
+		copy.remoteEntitiesPerPlayerRefreshRatio = this.remoteEntitiesPerPlayerRefreshRatio();
 		return copy;
 	}
 
@@ -100,7 +122,9 @@ public final class InfinitePlayerVisibilityConfig {
 		copy.visibilityDistanceBlocks = copy.visibilityDistanceBlocks();
 		copy.remoteRenderDistanceMode = copy.remoteRenderDistanceMode();
 		copy.remoteEntityTrackingIntervalTicks = copy.remoteEntityTrackingIntervalTicks();
-		copy.maxTrackedEntitiesPerRefresh = copy.maxTrackedEntitiesPerRefresh();
+		copy.maxTrackedRemotePlayersPerRefresh = copy.maxTrackedRemotePlayersPerRefresh();
+		copy.maxTrackedRemoteEntitiesPerRefresh = copy.maxTrackedRemoteEntitiesPerRefresh();
+		copy.remoteEntitiesPerPlayerRefreshRatio = copy.remoteEntitiesPerPlayerRefreshRatio();
 		return copy;
 	}
 
@@ -155,6 +179,34 @@ public final class InfinitePlayerVisibilityConfig {
 		}
 
 		return Math.min(MAX_TRACKED_ENTITIES_PER_REFRESH, maxTrackedEntitiesPerRefresh);
+	}
+
+	public static int resolveRemoteEntityRefreshCap(int onlinePlayers, int maxTrackedRemoteEntitiesPerRefresh, int remoteEntitiesPerPlayerRefreshRatio) {
+		int absoluteCap = clampMaxTrackedEntitiesPerRefresh(maxTrackedRemoteEntitiesPerRefresh);
+		int ratioCap = clampScaledRefreshCap(onlinePlayers, remoteEntitiesPerPlayerRefreshRatio);
+		if (absoluteCap == UNLIMITED_TRACKED_ENTITIES_PER_REFRESH) {
+			return ratioCap;
+		}
+
+		if (ratioCap == UNLIMITED_TRACKED_ENTITIES_PER_REFRESH) {
+			return absoluteCap;
+		}
+
+		return Math.min(absoluteCap, ratioCap);
+	}
+
+	private static int clampScaledRefreshCap(int onlinePlayers, int remoteEntitiesPerPlayerRefreshRatio) {
+		int ratio = clampMaxTrackedEntitiesPerRefresh(remoteEntitiesPerPlayerRefreshRatio);
+		if (ratio == UNLIMITED_TRACKED_ENTITIES_PER_REFRESH) {
+			return UNLIMITED_TRACKED_ENTITIES_PER_REFRESH;
+		}
+
+		if (onlinePlayers <= 0) {
+			return UNLIMITED_TRACKED_ENTITIES_PER_REFRESH;
+		}
+
+		long scaledCap = (long)onlinePlayers * ratio;
+		return (int)Math.min(MAX_TRACKED_ENTITIES_PER_REFRESH, scaledCap);
 	}
 
 	private static int nearestVisibilityDistanceStepIndex(int visibilityDistanceBlocks) {

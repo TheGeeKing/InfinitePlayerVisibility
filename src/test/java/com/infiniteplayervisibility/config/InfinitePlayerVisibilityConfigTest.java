@@ -45,6 +45,15 @@ final class InfinitePlayerVisibilityConfigTest {
 	}
 
 	@Test
+	void defaultsToConservativeRemoteEntityRefreshCaps() {
+		InfinitePlayerVisibilityConfig config = new InfinitePlayerVisibilityConfig();
+
+		assertEquals(0, config.maxTrackedRemotePlayersPerRefresh());
+		assertEquals(128, config.maxTrackedRemoteEntitiesPerRefresh());
+		assertEquals(16, config.remoteEntitiesPerPlayerRefreshRatio());
+	}
+
+	@Test
 	void sanitizesNullRemoteRenderDistanceMode() {
 		InfinitePlayerVisibilityConfig config = new InfinitePlayerVisibilityConfig();
 
@@ -60,6 +69,28 @@ final class InfinitePlayerVisibilityConfigTest {
 		config.setVisibilityDistanceBlocks(30000000);
 
 		assertEquals(blocks(2048), config.visibilityDistanceBlocks());
+	}
+
+	@Test
+	void clampsRemoteTrackerCaps() {
+		InfinitePlayerVisibilityConfig config = new InfinitePlayerVisibilityConfig();
+
+		config.setMaxTrackedRemotePlayersPerRefresh(-1);
+		config.setMaxTrackedRemoteEntitiesPerRefresh(Integer.MAX_VALUE);
+		config.setRemoteEntitiesPerPlayerRefreshRatio(32);
+
+		assertEquals(0, config.maxTrackedRemotePlayersPerRefresh());
+		assertEquals(InfinitePlayerVisibilityConfig.MAX_TRACKED_ENTITIES_PER_REFRESH, config.maxTrackedRemoteEntitiesPerRefresh());
+		assertEquals(32, config.remoteEntitiesPerPlayerRefreshRatio());
+	}
+
+	@Test
+	void resolvesRemoteEntityRefreshCapFromAbsoluteAndRatioLimits() {
+		assertEquals(0, InfinitePlayerVisibilityConfig.resolveRemoteEntityRefreshCap(5, 0, 0));
+		assertEquals(40, InfinitePlayerVisibilityConfig.resolveRemoteEntityRefreshCap(5, 40, 0));
+		assertEquals(80, InfinitePlayerVisibilityConfig.resolveRemoteEntityRefreshCap(5, 0, 16));
+		assertEquals(40, InfinitePlayerVisibilityConfig.resolveRemoteEntityRefreshCap(5, 40, 16));
+		assertEquals(80, InfinitePlayerVisibilityConfig.resolveRemoteEntityRefreshCap(5, 100, 16));
 	}
 
 	private static int chunks(int blocks) {
