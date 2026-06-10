@@ -103,7 +103,17 @@ publishing {
 }
 
 dependencyCheck {
+	scanConfigurations = ["runtimeClasspath"]
+
 	nvd {
 		apiKey = providers.gradleProperty("nvdApiKey").orElse(providers.environmentVariable("NVD_API_KEY")).orNull
+	}
+
+	analyzers {
+		ossIndex {
+			enabled = true
+			url = "https://api.guide.sonatype.com"
+			password = project.findProperty("ossIndexPassword") ?: ""
+		}
 	}
 }
