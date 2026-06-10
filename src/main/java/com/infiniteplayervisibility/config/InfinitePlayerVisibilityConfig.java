@@ -64,10 +64,6 @@ public final class InfinitePlayerVisibilityConfig {
 		this.visibilityDistanceBlocks = clampVisibilityDistanceBlocks(visibilityDistanceBlocks);
 	}
 
-	public boolean usesInfiniteVisibilityDistance() {
-		return false;
-	}
-
 	public RemoteRenderDistanceMode remoteRenderDistanceMode() {
 		return this.remoteRenderDistanceMode == null ? RemoteRenderDistanceMode.TERRAIN_CONTEXT : this.remoteRenderDistanceMode;
 	}

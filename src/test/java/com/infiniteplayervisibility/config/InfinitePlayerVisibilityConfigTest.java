@@ -1,7 +1,6 @@
 package com.infiniteplayervisibility.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import org.junit.jupiter.api.Test;
 
@@ -36,13 +35,6 @@ final class InfinitePlayerVisibilityConfigTest {
 		assertEquals(blocks(100), InfinitePlayerVisibilityConfig.visibilityDistanceBlocksAtStep(13));
 		assertEquals(blocks(2048), InfinitePlayerVisibilityConfig.visibilityDistanceBlocksAtStep(Integer.MAX_VALUE));
 		assertEquals(258, InfinitePlayerVisibilityConfig.visibilityDistanceBlockStepCount());
-	}
-
-	@Test
-	void maximumVisibilityDistanceIsNotInfinite() {
-		InfinitePlayerVisibilityConfig config = new InfinitePlayerVisibilityConfig();
-
-		assertFalse(config.usesInfiniteVisibilityDistance());
 	}
 
 	@Test
