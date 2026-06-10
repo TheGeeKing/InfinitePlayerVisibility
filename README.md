@@ -27,18 +27,15 @@ Clients report their effective render cap to the server. The server then uses th
 
 ## Solo Visibility Anchor
 
-The `infinite_player_visibility:solo_visibility_anchor` block is an admin/debug-style helper for keeping an area ticking so remote entities there can remain visible.
+The `infinite_player_visibility:solo_visibility_anchor` block is an admin/debug-style helper for keeping one chunk ticking so remote entities there can remain visible.
 
 ```mcfunction
 /give @p infinite_player_visibility:solo_visibility_anchor
 ```
 
-By default, the anchor is enabled and force-loads chunks within a `128` block radius, matching the original behavior. Server admins can control it with:
+The anchor force-loads only the chunk containing the anchor. Remove the block to release the chunk.
 
-- `enableSoloVisibilityAnchor`: enables or disables anchor force-loading.
-- `anchorRadiusBlocks`: force-loaded anchor radius, clamped from `0` to `128` blocks.
-
-When an anchor starts or updates forced chunk loading, the server log includes the dimension, position, radius, and chunk count.
+When an anchor starts forced chunk loading, the server log includes the dimension and position.
 
 ## Installation
 

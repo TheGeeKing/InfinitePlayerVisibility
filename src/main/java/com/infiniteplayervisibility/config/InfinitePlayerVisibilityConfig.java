@@ -8,9 +8,6 @@ public final class InfinitePlayerVisibilityConfig {
 	public static final int MAX_VISIBILITY_DISTANCE_CHUNKS = 2048;
 	public static final int MIN_VISIBILITY_DISTANCE_BLOCKS = chunksToBlocks(MIN_VISIBILITY_DISTANCE_CHUNKS);
 	public static final int MAX_VISIBILITY_DISTANCE_BLOCKS = chunksToBlocks(MAX_VISIBILITY_DISTANCE_CHUNKS);
-	public static final int MIN_ANCHOR_RADIUS_BLOCKS = 0;
-	public static final int MAX_ANCHOR_RADIUS_BLOCKS = 128;
-	public static final int DEFAULT_ANCHOR_RADIUS_BLOCKS = 128;
 	public static final int MIN_REMOTE_ENTITY_TRACKING_INTERVAL_TICKS = 1;
 	public static final int MAX_REMOTE_ENTITY_TRACKING_INTERVAL_TICKS = 200;
 	public static final int DEFAULT_REMOTE_ENTITY_TRACKING_INTERVAL_TICKS = 4;
@@ -27,8 +24,6 @@ public final class InfinitePlayerVisibilityConfig {
 	private boolean renderRemoteEntities = true;
 	private int visibilityDistanceBlocks = MAX_VISIBILITY_DISTANCE_BLOCKS;
 	private RemoteRenderDistanceMode remoteRenderDistanceMode = RemoteRenderDistanceMode.TERRAIN_CONTEXT;
-	private boolean enableSoloVisibilityAnchor = true;
-	private int anchorRadiusBlocks = DEFAULT_ANCHOR_RADIUS_BLOCKS;
 	private int remoteEntityTrackingIntervalTicks = DEFAULT_REMOTE_ENTITY_TRACKING_INTERVAL_TICKS;
 	private int maxTrackedEntitiesPerRefresh = UNLIMITED_TRACKED_ENTITIES_PER_REFRESH;
 
@@ -72,22 +67,6 @@ public final class InfinitePlayerVisibilityConfig {
 		this.remoteRenderDistanceMode = remoteRenderDistanceMode == null ? RemoteRenderDistanceMode.TERRAIN_CONTEXT : remoteRenderDistanceMode;
 	}
 
-	public boolean enableSoloVisibilityAnchor() {
-		return this.enableSoloVisibilityAnchor;
-	}
-
-	public void setEnableSoloVisibilityAnchor(boolean enableSoloVisibilityAnchor) {
-		this.enableSoloVisibilityAnchor = enableSoloVisibilityAnchor;
-	}
-
-	public int anchorRadiusBlocks() {
-		return clampAnchorRadiusBlocks(this.anchorRadiusBlocks);
-	}
-
-	public void setAnchorRadiusBlocks(int anchorRadiusBlocks) {
-		this.anchorRadiusBlocks = clampAnchorRadiusBlocks(anchorRadiusBlocks);
-	}
-
 	public int remoteEntityTrackingIntervalTicks() {
 		return clampRemoteEntityTrackingIntervalTicks(this.remoteEntityTrackingIntervalTicks);
 	}
@@ -111,8 +90,6 @@ public final class InfinitePlayerVisibilityConfig {
 		copy.renderRemoteEntities = this.renderRemoteEntities;
 		copy.visibilityDistanceBlocks = this.visibilityDistanceBlocks();
 		copy.remoteRenderDistanceMode = this.remoteRenderDistanceMode();
-		copy.enableSoloVisibilityAnchor = this.enableSoloVisibilityAnchor;
-		copy.anchorRadiusBlocks = this.anchorRadiusBlocks();
 		copy.remoteEntityTrackingIntervalTicks = this.remoteEntityTrackingIntervalTicks();
 		copy.maxTrackedEntitiesPerRefresh = this.maxTrackedEntitiesPerRefresh();
 		return copy;
@@ -122,7 +99,6 @@ public final class InfinitePlayerVisibilityConfig {
 		InfinitePlayerVisibilityConfig copy = this.copy();
 		copy.visibilityDistanceBlocks = copy.visibilityDistanceBlocks();
 		copy.remoteRenderDistanceMode = copy.remoteRenderDistanceMode();
-		copy.anchorRadiusBlocks = copy.anchorRadiusBlocks();
 		copy.remoteEntityTrackingIntervalTicks = copy.remoteEntityTrackingIntervalTicks();
 		copy.maxTrackedEntitiesPerRefresh = copy.maxTrackedEntitiesPerRefresh();
 		return copy;
@@ -164,10 +140,6 @@ public final class InfinitePlayerVisibilityConfig {
 	public static int visibilityDistanceStepIndex(int visibilityDistanceBlocks) {
 		int snappedBlocks = clampVisibilityDistanceBlocks(visibilityDistanceBlocks);
 		return nearestVisibilityDistanceStepIndex(snappedBlocks);
-	}
-
-	public static int clampAnchorRadiusBlocks(int anchorRadiusBlocks) {
-		return Math.max(MIN_ANCHOR_RADIUS_BLOCKS, Math.min(MAX_ANCHOR_RADIUS_BLOCKS, anchorRadiusBlocks));
 	}
 
 	public static int clampRemoteEntityTrackingIntervalTicks(int remoteEntityTrackingIntervalTicks) {
