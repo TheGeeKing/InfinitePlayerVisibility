@@ -12,6 +12,7 @@ import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -58,7 +59,7 @@ abstract class ServerChunkLoadingManagerMixin {
 
 			ServerChunkLoadingManagerEntityTrackerAccessor tracker = (ServerChunkLoadingManagerEntityTrackerAccessor)trackerObject;
 			Entity entity = tracker.infinitePlayerVisibility$getEntity();
-			if (!EntityVisibilityRules.shouldForceServerTracking(entity)) {
+			if (!shouldForceServerTracking(entity, config)) {
 				continue;
 			}
 
@@ -80,6 +81,18 @@ abstract class ServerChunkLoadingManagerMixin {
 		return config.enabled()
 			&& (config.renderRemotePlayers() || config.renderRemoteEntities())
 			&& !this.level.players().isEmpty();
+	}
+
+	private boolean shouldForceServerTracking(Entity entity, InfinitePlayerVisibilityConfig config) {
+		if (entity.isRemoved() || !config.enabled()) {
+			return false;
+		}
+
+		if (entity instanceof Player) {
+			return config.renderRemotePlayers();
+		}
+
+		return config.renderRemoteEntities() && this.level.isPositionEntityTicking(entity.blockPosition());
 	}
 
 	private static Reference2IntOpenHashMap<ServerPlayer> getClientTrackingDistanceBlocksByPlayer(List<ServerPlayer> players) {
