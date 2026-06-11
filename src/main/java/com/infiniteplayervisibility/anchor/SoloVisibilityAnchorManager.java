@@ -2,6 +2,8 @@ package com.infiniteplayervisibility.anchor;
 
 import com.infiniteplayervisibility.InfinitePlayerVisibilityMod;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
@@ -38,19 +40,16 @@ public final class SoloVisibilityAnchorManager {
 
 	private static final class WorldAnchors {
 		private final ServerLevel level;
-		private final Long2IntOpenHashMap anchorCounts = new Long2IntOpenHashMap();
+		private final LongSet anchors = new LongOpenHashSet();
 		private final Long2IntOpenHashMap forcedChunkCounts = new Long2IntOpenHashMap();
 
 		private WorldAnchors(ServerLevel level) {
 			this.level = level;
-			this.anchorCounts.defaultReturnValue(0);
 			this.forcedChunkCounts.defaultReturnValue(0);
 		}
 
 		private void register(BlockPos pos) {
-			long anchorKey = pos.asLong();
-			int newAnchorCount = this.anchorCounts.addTo(anchorKey, 1) + 1;
-			if (newAnchorCount > 1) {
+			if (!this.anchors.add(pos.asLong())) {
 				return;
 			}
 
@@ -59,19 +58,11 @@ public final class SoloVisibilityAnchorManager {
 		}
 
 		private void unregister(BlockPos pos) {
-			long anchorKey = pos.asLong();
-			int currentAnchorCount = this.anchorCounts.get(anchorKey);
-			if (currentAnchorCount <= 0) {
+			if (!this.anchors.remove(pos.asLong())) {
 				return;
 			}
 
-			if (currentAnchorCount == 1) {
-				this.anchorCounts.remove(anchorKey);
-				this.updateForcedChunk(pos, false);
-				return;
-			}
-
-			this.anchorCounts.put(anchorKey, currentAnchorCount - 1);
+			this.updateForcedChunk(pos, false);
 		}
 
 		private boolean keepsEntitiesTicking(BlockPos pos) {
@@ -80,7 +71,7 @@ public final class SoloVisibilityAnchorManager {
 		}
 
 		private boolean isEmpty() {
-			return this.anchorCounts.isEmpty();
+			return this.anchors.isEmpty();
 		}
 
 		private void updateForcedChunk(BlockPos pos, boolean register) {

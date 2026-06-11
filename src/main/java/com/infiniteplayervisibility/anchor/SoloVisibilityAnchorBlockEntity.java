@@ -24,13 +24,4 @@ public final class SoloVisibilityAnchorBlockEntity extends BlockEntity {
 		}
 	}
 
-	@Override
-	public void setRemoved() {
-		if (this.registered && this.level instanceof ServerLevel serverLevel) {
-			SoloVisibilityAnchorManager.unregister(serverLevel, this.getBlockPos());
-			this.registered = false;
-		}
-
-		super.setRemoved();
-	}
 }

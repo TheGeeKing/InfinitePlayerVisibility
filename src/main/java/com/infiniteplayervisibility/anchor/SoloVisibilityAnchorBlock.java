@@ -2,6 +2,7 @@ package com.infiniteplayervisibility.anchor;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -42,5 +43,11 @@ public final class SoloVisibilityAnchorBlock extends BaseEntityBlock {
 		}
 
 		return createTickerHelper(type, SoloVisibilityAnchorContent.SOLO_VISIBILITY_ANCHOR_BLOCK_ENTITY, SoloVisibilityAnchorBlockEntity::serverTick);
+	}
+
+	@Override
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+		SoloVisibilityAnchorManager.unregister(level, pos);
+		super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
 	}
 }
