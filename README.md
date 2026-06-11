@@ -78,17 +78,27 @@ Disable remote mob/item tracking while keeping distant players visible:
 }
 ```
 
-## Solo Visibility Anchor
+## Keeping remote entities ticking
 
-The `infinite_player_visibility:solo_visibility_anchor` block is an admin/debug-style helper for keeping one chunk ticking so remote entities there can remain visible.
+This mod does not load distant chunks by itself. Remote mobs and items can only stay visible while their server-side position is still ticking.
+
+For static showcases or admin/debug setups, use Minecraft's vanilla `/forceload` command to keep the chunk ticking:
 
 ```mcfunction
-/give @p infinite_player_visibility:solo_visibility_anchor
+/forceload add <x> <z>
 ```
 
-The anchor force-loads only the chunk containing the anchor. Remove the block to release the chunk.
+Remove it with:
 
-When an anchor starts forced chunk loading, the server log includes the dimension and position.
+```mcfunction
+/forceload remove <x> <z>
+```
+
+The coordinates are chunk coordinates, not block coordinates. You can find them in the F3 debug screen. For example, block `160 64 -32` is in chunk `10 -2`, so use:
+
+```mcfunction
+/forceload add 10 -2
+```
 
 ## Installation
 

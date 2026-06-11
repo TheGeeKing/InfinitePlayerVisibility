@@ -11,6 +11,5 @@
 	"option.infinite_player_visibility.remote_render_distance_mode.terrain_context.tooltip": "Limite le rendu lointain à la portée du terrain chargé pour éviter les joueurs et entités dans le vide.",
 	"option.infinite_player_visibility.remote_render_distance_mode.mod_distance": "Distance du mod",
 	"option.infinite_player_visibility.remote_render_distance_mode.mod_distance.tooltip": "Utilise seulement la distance de visibilité du mod, même au-delà du terrain chargé.",
-	"block.infinite_player_visibility.solo_visibility_anchor": "Ancre de visibilité solo",
 	"modmenu.descriptionTranslation.infinite_player_visibility": "Garde visibles les joueurs lointains et les entités simulées par le serveur sans charger leurs chunks."
 }

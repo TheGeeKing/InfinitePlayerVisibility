@@ -11,6 +11,5 @@
 	"option.infinite_player_visibility.remote_render_distance_mode.terrain_context.tooltip": "Caps remote rendering to loaded terrain range so players and entities do not appear in unloaded space.",
 	"option.infinite_player_visibility.remote_render_distance_mode.mod_distance": "Mod distance",
 	"option.infinite_player_visibility.remote_render_distance_mode.mod_distance.tooltip": "Uses only this mod's visibility distance, even beyond loaded terrain.",
-	"block.infinite_player_visibility.solo_visibility_anchor": "Solo Visibility Anchor",
 	"modmenu.descriptionTranslation.infinite_player_visibility": "Keeps distant players and server-ticking entities visible without loading their chunks."
 }

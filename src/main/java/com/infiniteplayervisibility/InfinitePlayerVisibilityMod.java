@@ -1,6 +1,5 @@
 package com.infiniteplayervisibility;
 
-import com.infiniteplayervisibility.anchor.SoloVisibilityAnchorContent;
 import com.infiniteplayervisibility.config.InfinitePlayerVisibilityConfigManager;
 import com.infiniteplayervisibility.network.InfinitePlayerVisibilityNetworking;
 import net.fabricmc.api.ModInitializer;
@@ -15,7 +14,6 @@ public final class InfinitePlayerVisibilityMod implements ModInitializer {
 	public void onInitialize() {
 		InfinitePlayerVisibilityConfigManager.load();
 		InfinitePlayerVisibilityNetworking.initialize();
-		SoloVisibilityAnchorContent.initialize();
 		LOGGER.info("Infinite player visibility is active.");
 	}
 }
