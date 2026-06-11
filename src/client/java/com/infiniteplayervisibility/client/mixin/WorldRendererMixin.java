@@ -23,7 +23,7 @@ abstract class WorldRendererMixin {
 			return;
 		}
 
-		if (ClientEntityVisibility.hasRenderableEntityAt(this.level, pos)) {
+		if (ClientEntityVisibility.hasRenderableEntityInSection(this.level, pos)) {
 			cir.setReturnValue(true);
 		}
 	}

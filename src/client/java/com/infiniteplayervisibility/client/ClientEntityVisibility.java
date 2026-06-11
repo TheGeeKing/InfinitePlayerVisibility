@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.animal.fish.AbstractFish;
@@ -14,7 +15,8 @@ import net.minecraft.world.entity.animal.fish.WaterAnimal;
 import net.minecraft.world.phys.Vec3;
 
 public final class ClientEntityVisibility {
-	private static final LongSet RENDERABLE_ENTITY_BLOCK_POSITIONS = new LongOpenHashSet();
+	private static final LongSet RENDERABLE_ENTITY_SECTIONS = new LongOpenHashSet();
+	private static final LongSet RENDERABLE_ENTITY_CHUNKS = new LongOpenHashSet();
 	private static ClientLevel cachedRenderableEntityLevel;
 	private static long cachedRenderableEntityGameTime = Long.MIN_VALUE;
 	private static long cachedCameraBlockPos = Long.MIN_VALUE;
@@ -38,9 +40,7 @@ public final class ClientEntityVisibility {
 	}
 
 	public static boolean shouldOverrideVanillaRendering(Entity entity) {
-		return shouldOverrideDistanceLimit(entity)
-			&& isWithinConfiguredVisibility(entity)
-			&& isOutsideLoadedClientChunks(entity);
+		return shouldOverrideDistanceLimit(entity) && isWithinConfiguredVisibility(entity);
 	}
 
 	public static boolean shouldOverrideVanillaDistanceLimit(Entity entity) {
@@ -57,16 +57,18 @@ public final class ClientEntityVisibility {
 			&& !entity.isRemoved();
 	}
 
-	public static boolean hasRenderableEntityAt(ClientLevel world, BlockPos pos) {
+	public static boolean hasRenderableEntityInSection(ClientLevel world, BlockPos sectionOrigin) {
 		refreshRenderableEntityPositionCache(world);
-		return RENDERABLE_ENTITY_BLOCK_POSITIONS.contains(pos.asLong());
+		return RENDERABLE_ENTITY_SECTIONS.contains(sectionKey(sectionOrigin))
+			|| RENDERABLE_ENTITY_CHUNKS.contains(chunkKey(sectionOrigin));
 	}
 
 	public static void invalidateRenderableEntityPositionCache() {
 		cachedRenderableEntityLevel = null;
 		cachedRenderableEntityGameTime = Long.MIN_VALUE;
 		cachedCameraBlockPos = Long.MIN_VALUE;
-		RENDERABLE_ENTITY_BLOCK_POSITIONS.clear();
+		RENDERABLE_ENTITY_SECTIONS.clear();
+		RENDERABLE_ENTITY_CHUNKS.clear();
 	}
 
 	private static void refreshRenderableEntityPositionCache(ClientLevel world) {
@@ -76,10 +78,12 @@ public final class ClientEntityVisibility {
 			return;
 		}
 
-		RENDERABLE_ENTITY_BLOCK_POSITIONS.clear();
+		RENDERABLE_ENTITY_SECTIONS.clear();
+		RENDERABLE_ENTITY_CHUNKS.clear();
 		for (Entity entity : world.entitiesForRendering()) {
 			if (shouldIndexRenderableEntity(entity)) {
-				RENDERABLE_ENTITY_BLOCK_POSITIONS.add(entity.blockPosition().asLong());
+				RENDERABLE_ENTITY_SECTIONS.add(sectionKey(entity.blockPosition()));
+				RENDERABLE_ENTITY_CHUNKS.add(chunkKey(entity.blockPosition()));
 			}
 		}
 
@@ -105,6 +109,22 @@ public final class ClientEntityVisibility {
 
 	private static boolean shouldIndexRenderableEntity(Entity entity) {
 		return !entity.isRemoved() && shouldRenderEntity(entity);
+	}
+
+	private static long sectionKey(BlockPos pos) {
+		return SectionPos.asLong(
+			SectionPos.blockToSectionCoord(pos.getX()),
+			SectionPos.blockToSectionCoord(pos.getY()),
+			SectionPos.blockToSectionCoord(pos.getZ())
+		);
+	}
+
+	private static long chunkKey(BlockPos pos) {
+		return SectionPos.asLong(
+			SectionPos.blockToSectionCoord(pos.getX()),
+			0,
+			SectionPos.blockToSectionCoord(pos.getZ())
+		);
 	}
 
 	private static boolean isWithinConfiguredVisibility(Entity entity) {
