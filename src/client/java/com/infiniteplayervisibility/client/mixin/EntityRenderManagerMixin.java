@@ -17,7 +17,7 @@ abstract class EntityRenderManagerMixin {
 	@Shadow
 	public abstract <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T entity);
 
-	@Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "shouldRender", at = @At("RETURN"), cancellable = true)
 	private void infinitePlayerVisibility$allowForcedEntitiesWithoutBypassingFrustum(
 		Entity entity,
 		Frustum frustum,
@@ -26,6 +26,10 @@ abstract class EntityRenderManagerMixin {
 		double z,
 		CallbackInfoReturnable<Boolean> cir
 	) {
+		if (cir.getReturnValueZ()) {
+			return;
+		}
+
 		if (!ClientEntityVisibility.shouldOverrideVanillaRendering(entity)) {
 			return;
 		}
